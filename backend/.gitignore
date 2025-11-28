@@ -241,9 +241,3 @@ ENV/
 # Docker
 .docker/
 docker-compose.override.yml
-
-# Frontend (بعداً که اضافه کردی)
-frontend/node_modules/
-frontend/.env.local
-frontend/dist/
-frontend/build/
