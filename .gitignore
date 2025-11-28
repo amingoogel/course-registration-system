@@ -1,0 +1,61 @@
+# ============================
+# Global Ignore (Root Level)
+# ============================
+
+# System files
+.DS_Store
+Thumbs.db
+
+# VS Code settings
+.vscode/
+*.code-workspace
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# OS trash
+.Trashes
+.AppleDouble
+.LSOverride
+
+# Backup files
+*~
+*.bak
+*.backup
+
+# Environment / Secrets (root-level)
+.env
+.env.*
+
+# Coverage / Test output
+coverage/
+*.coverage
+*.lcov
+
+# Python / Node locks (just in case)
+Pipfile.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Virtual environments accidentally created in root
+venv/
+.venv/
+env/
+
+# Build artifacts accidentally created at root
+dist/
+build/
+
+# JetBrains IDE (PyCharm/WebStorm)
+.idea/
+
+# Cache folders
+.cache/
