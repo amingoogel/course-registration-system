@@ -43,15 +43,6 @@ function AdminDashboard({ auth, onLogout }) {
         backgroundColor: colors.background,
       }}
     >
-          <div
-      style={{
-        display: "flex",
-        minHeight: "100vh",
-        fontFamily: "sans-serif",
-        direction: "rtl",
-        backgroundColor: colors.background,
-      }}
-    >
       {/* سایدبار */}
       <aside
         style={{
@@ -76,6 +67,7 @@ function AdminDashboard({ auth, onLogout }) {
           >
             دسترسی
           </div>
+
         </div>
 
         <nav style={{ padding: "8px 4px" }}>
@@ -118,8 +110,8 @@ function AdminDashboard({ auth, onLogout }) {
         </nav>
       </aside>
 
-            {/* بخش اصلی */}
-            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      {/* بخش اصلی */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         {/* هدر بالا */}
         <header
           style={{
@@ -202,8 +194,8 @@ function AdminDashboard({ auth, onLogout }) {
           </button>
         </header>
 
-                {/* محتوا */}
-                <main
+        {/* محتوا */}
+        <main
           style={{
             padding: "18px",
             flex: 1,
@@ -295,11 +287,7 @@ function AdminDashboard({ auth, onLogout }) {
             <Courses accessToken={auth.accessToken} />
           )}
         </main>
-
       </div>
-
-    </div>
-
     </div>
   );
 }
