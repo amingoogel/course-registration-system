@@ -241,10 +241,314 @@ function CourseManager({ accessToken }) {
     margin: "0 2px",
   };
 
+  return (
+    <div style={containerStyle}>
+      {/* فرم افزودن/ویرایش درس */}
+      <div style={cardStyle}>
+        <h2
+          style={{
+            fontSize: "15px",
+            marginBottom: "10px",
+          }}
+        >
+          {selectedCourse.id ? "ویرایش درس" : "افزودن درس جدید"}
+        </h2>
 
+        <form onSubmit={handleSubmit}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: "12px 16px",
+              marginBottom: "10px",
+            }}
+          >
+            <div>
+              <label style={labelStyle}>کد درس *</label>
+              <input
+                type="text"
+                style={inputStyle}
+                value={selectedCourse.code}
+                onChange={(e) =>
+                  handleInputChange("code", e.target.value)
+                }
+              />
+            </div>
 
+            <div>
+              <label style={labelStyle}>نام درس *</label>
+              <input
+                type="text"
+                style={inputStyle}
+                value={selectedCourse.name}
+                onChange={(e) =>
+                  handleInputChange("name", e.target.value)
+                }
+              />
+            </div>
 
+            <div>
+              <label style={labelStyle}>ظرفیت</label>
+              <input
+                type="number"
+                style={inputStyle}
+                value={selectedCourse.capacity}
+                onChange={(e) =>
+                  handleInputChange("capacity", e.target.value)
+                }
+              />
+            </div>
 
+            <div>
+              <label style={labelStyle}>تعداد واحد</label>
+              <input
+                type="number"
+                style={inputStyle}
+                value={selectedCourse.units}
+                onChange={(e) =>
+                  handleInputChange("units", e.target.value)
+                }
+              />
+            </div>
 
-  
+            <div>
+              <label style={labelStyle}>روز</label>
+              <input
+                type="text"
+                style={inputStyle}
+                value={selectedCourse.day}
+                onChange={(e) =>
+                  handleInputChange("day", e.target.value)
+                }
+              />
+            </div>
+
+            <div>
+              <label style={labelStyle}>ساعت شروع (مثلاً 08:00)</label>
+              <input
+                type="text"
+                style={inputStyle}
+                value={selectedCourse.start_time}
+                onChange={(e) =>
+                  handleInputChange("start_time", e.target.value)
+                }
+              />
+            </div>
+
+            <div>
+              <label style={labelStyle}>ساعت پایان (مثلاً 09:30)</label>
+              <input
+                type="text"
+                style={inputStyle}
+                value={selectedCourse.end_time}
+                onChange={(e) =>
+                  handleInputChange("end_time", e.target.value)
+                }
+              />
+            </div>
+
+            <div>
+              <label style={labelStyle}>محل برگزاری</label>
+              <input
+                type="text"
+                style={inputStyle}
+                value={selectedCourse.location}
+                onChange={(e) =>
+                  handleInputChange("location", e.target.value)
+                }
+              />
+            </div>
+
+            <div>
+              <label style={labelStyle}>استاد</label>
+              <input
+                type="text"
+                style={inputStyle}
+                value={selectedCourse.professor}
+                onChange={(e) =>
+                  handleInputChange("professor", e.target.value)
+                }
+              />
+            </div>
+          </div>
+
+          {message && (
+            <div
+              style={{
+                marginBottom: "8px",
+                padding: "6px 8px",
+                borderRadius: "10px",
+                fontSize: "12px",
+                whiteSpace: "pre-line",
+                backgroundColor:
+                  messageType === "error"
+                    ? "#ffe5e5"
+                    : messageType === "success"
+                    ? "#e5ffea"
+                    : "#f5f5f5",
+                color:
+                  messageType === "error"
+                    ? "#a30000"
+                    : messageType === "success"
+                    ? "#036b21"
+                    : "#333",
+              }}
+            >
+              {message}
+            </div>
+          )}
+
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              justifyContent: "flex-start",
+              marginTop: "4px",
+            }}
+          >
+            <button
+              type="submit"
+              disabled={saving}
+              style={{
+                ...actionButtonStyle,
+                background:
+                  "linear-gradient(135deg, #D9CFC7 0%, #B6A896 100%)",
+                minWidth: "110px",
+              }}
+            >
+              {saving
+                ? "در حال ذخیره..."
+                : selectedCourse.id
+                ? "ثبت ویرایش"
+                : "افزودن درس"}
+            </button>
+
+            {selectedCourse.id && (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                style={{
+                  ...actionButtonStyle,
+                  backgroundColor: "#ddd",
+                  minWidth: "80px",
+                }}
+              >
+                انصراف
+              </button>
+            )}
+          </div>
+        </form>
+      </div>
+
+      {/* جدول لیست دروس (مدیریت) */}
+      <div style={cardStyle}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "10px",
+          }}
+        >
+          <h2
+            style={{
+              fontSize: "15px",
+              margin: 0,
+            }}
+          >
+            لیست دروس (مدیریت)
+          </h2>
+          {loading && (
+            <span style={{ fontSize: "12px", color: "#555" }}>
+              در حال بارگذاری...
+            </span>
+          )}
+        </div>
+
+        <div style={{ overflowX: "auto" }}>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              fontSize: "12px",
+            }}
+          >
+            <thead>
+              <tr>
+                <th style={thStyle}>کد</th>
+                <th style={thStyle}>نام درس</th>
+                <th style={thStyle}>ظرفیت</th>
+                <th style={thStyle}>واحد</th>
+                <th style={thStyle}>روز</th>
+                <th style={thStyle}>شروع کلاس</th>
+                <th style={thStyle}>پایان کلاس</th>
+                <th style={thStyle}>محل</th>
+                <th style={thStyle}>استاد</th>
+                <th style={thStyle}>عملیات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {courses.length === 0 && !loading ? (
+                <tr>
+                  <td style={tdStyle} colSpan={10}>
+                    درسی ثبت نشده است.
+                  </td>
+                </tr>
+              ) : (
+                courses.map((course) => (
+                  <tr key={course.id}>
+                    <td style={tdStyle}>{course.code}</td>
+                    <td style={tdStyle}>{course.name}</td>
+                    <td style={tdStyle}>
+                      {course.capacity !== null &&
+                      course.capacity !== undefined
+                        ? course.capacity
+                        : "-"}
+                    </td>
+                    <td style={tdStyle}>
+                      {course.units !== null &&
+                      course.units !== undefined
+                        ? course.units
+                        : "-"}
+                    </td>
+                    <td style={tdStyle}>{course.day || "-"}</td>
+                    <td style={tdStyle}>{course.start_time || "-"}</td>
+                    <td style={tdStyle}>{course.end_time || "-"}</td>
+                    <td style={tdStyle}>{course.location || "-"}</td>
+                    <td style={tdStyle}>{course.professor || "-"}</td>
+                    <td style={tdStyle}>
+                      <button
+                        type="button"
+                        onClick={() => handleEditClick(course)}
+                        style={{
+                          ...actionButtonStyle,
+                          backgroundColor: "#e3e0ff",
+                        }}
+                      >
+                        ویرایش
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleDeleteCourse(course.id)
+                        }
+                        style={{
+                          ...actionButtonStyle,
+                          backgroundColor: "#ffd6d6",
+                        }}
+                      >
+                        حذف
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
 }
+
+export default CourseManager;
