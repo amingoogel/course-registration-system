@@ -202,7 +202,100 @@ function AdminDashboard({ auth, onLogout }) {
           </button>
         </header>
 
-        {/* محتوا بعداً تکمیل می‌شود */}
+                {/* محتوا */}
+                <main
+          style={{
+            padding: "18px",
+            flex: 1,
+          }}
+        >
+          {view === "home" && (
+            <></>
+          )}
+
+          {view === "dashboard-menu" && (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(220px, 1fr))",
+                gap: "16px",
+              }}
+            >
+              <button
+                onClick={() => setView("manageCourses")}
+                style={{
+                  border: "none",
+                  borderRadius: "16px",
+                  padding: "18px 16px",
+                  textAlign: "right",
+                  backgroundColor: colors.card,
+                  boxShadow: "0 8px 20px rgba(0,0,0,0.06)",
+                  cursor: "pointer",
+                  fontSize: "16px",
+                }}
+              >
+                📚 مدیریت دروس
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: "#555",
+                    marginTop: "6px",
+                  }}
+                >
+                  افزودن، ویرایش و حذف دروس
+                </div>
+              </button>
+
+              <button
+                onClick={() => setView("courseList")}
+                style={{
+                  border: "none",
+                  borderRadius: "16px",
+                  padding: "18px 16px",
+                  textAlign: "right",
+                  backgroundColor: colors.card,
+                  boxShadow: "0 8px 20px rgba(0,0,0,0.06)",
+                  cursor: "pointer",
+                  fontSize: "16px",
+                }}
+              >
+                📄 لیست دروس
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: "#555",
+                    marginTop: "6px",
+                  }}
+                >
+                  مشاهده‌ی تمامی دروس
+                </div>
+              </button>
+            </div>
+          )}
+
+          {/* دکمه بازگشت، فقط وقتی در مدیریت دروس یا لیست دروس هستیم */}
+          {(view === "manageCourses" || view === "courseList") && (
+            <div style={{ marginBottom: "12px" }}>
+              <button
+                type="button"
+                onClick={() => setView("dashboard-menu")}
+                style={backButtonStyle}
+              >
+                ⬅ بازگشت به داشبورد
+              </button>
+            </div>
+          )}
+
+          {view === "manageCourses" && (
+            <CourseManager accessToken={auth.accessToken} />
+          )}
+
+          {view === "courseList" && (
+            <Courses accessToken={auth.accessToken} />
+          )}
+        </main>
+
       </div>
 
     </div>
