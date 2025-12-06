@@ -43,8 +43,84 @@ function AdminDashboard({ auth, onLogout }) {
         backgroundColor: colors.background,
       }}
     >
-      {/* سایدبار بعداً اضافه می‌شود */}
+          <div
+      style={{
+        display: "flex",
+        minHeight: "100vh",
+        fontFamily: "sans-serif",
+        direction: "rtl",
+        backgroundColor: colors.background,
+      }}
+    >
+      {/* سایدبار */}
+      <aside
+        style={{
+          width: sidebarOpen ? "220px" : "0px",
+          overflow: "hidden",
+          backgroundColor: colors.sidebar,
+          borderLeft: `1px solid ${colors.border}`,
+          transition: "width 0.2s ease",
+          boxShadow: sidebarOpen
+            ? "0 0 24px rgba(0,0,0,0.08)"
+            : "none",
+          zIndex: 2,
+        }}
+      >
+        <div style={{ padding: "16px 18px" }}>
+          <div
+            style={{
+              fontWeight: 700,
+              fontSize: "20px",
+              marginBottom: "0px",
+            }}
+          >
+            دسترسی
+          </div>
+        </div>
+
+        <nav style={{ padding: "8px 4px" }}>
+          <button
+            onClick={() => setView("home")}
+            style={{
+              width: "100%",
+              textAlign: "right",
+              padding: "10px 16px",
+              border: "none",
+              backgroundColor:
+                view === "home" ? "rgba(0,0,0,0.04)" : "transparent",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontSize: "13px",
+              marginBottom: "4px",
+            }}
+          >
+            🏠 صفحه اصلی
+          </button>
+
+          <button
+            onClick={() => setView("dashboard-menu")}
+            style={{
+              width: "100%",
+              textAlign: "right",
+              padding: "10px 16px",
+              border: "none",
+              backgroundColor: isDashboardView
+                ? "rgba(0,0,0,0.04)"
+                : "transparent",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontSize: "13px",
+              marginTop: "4px",
+            }}
+          >
+            📊 داشبورد
+          </button>
+        </nav>
+      </aside>
+
       {/* بخش اصلی بعداً تکمیل می‌شود */}
+    </div>
+
     </div>
   );
 }
