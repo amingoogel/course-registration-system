@@ -20,3 +20,8 @@ class CourseViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         instance.delete()
         return Response({"detail": "درس با موفقیت حذف شد"})
+
+class PrerequisiteViewSet(viewsets.ModelViewSet):
+    queryset = Prerequisite.objects.all()
+    serializer_class = PrerequisiteSerializer
+    permission_classes = [IsAdminUser]
