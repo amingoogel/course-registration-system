@@ -26,3 +26,10 @@ class Prerequisite(models.Model):
 
     def __str__(self):
         return f"{self.prerequisite} پیش‌نیاز {self.course}"
+    
+class UnitLimit(models.Model):
+    min_units = models.PositiveIntegerField(default=12)
+    max_units = models.PositiveIntegerField(default=20)
+
+    class Meta:
+        verbose_name_plural = "حد واحدهای اخذ شده"
