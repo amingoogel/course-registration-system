@@ -25,3 +25,8 @@ class PrerequisiteViewSet(viewsets.ModelViewSet):
     queryset = Prerequisite.objects.all()
     serializer_class = PrerequisiteSerializer
     permission_classes = [IsAdminUser]
+
+class UnitLimitViewSet(viewsets.ModelViewSet):
+    queryset = UnitLimit.objects.all()
+    serializer_class = UnitLimitSerializer
+    permission_classes = [IsAdminUser]
