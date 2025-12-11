@@ -16,3 +16,14 @@ class CourseSerializer(serializers.ModelSerializer):
             if Course.objects.filter(code=value).exists():
                 raise serializers.ValidationError("کد درس تکراری است")
         return value
+
+class PrerequisiteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Prerequisite
+        fields = '__all__'  
+
+    def validate(self, data):
+        if data['course'] == data['prerequisite']:
+            raise serializers.ValidationError("درس نمی‌تواند پیش‌نیاز خودش باشد")
+        return data
