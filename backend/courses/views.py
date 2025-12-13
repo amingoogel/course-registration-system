@@ -1,6 +1,7 @@
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, status, permissions, filters
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.decorators import action
 from .models import Course, Prerequisite, UnitLimit
 from .serializers import CourseSerializer, PrerequisiteSerializer,UnitLimitSerializer
 
@@ -34,3 +35,8 @@ class UnitLimitViewSet(viewsets.ModelViewSet):
     queryset = UnitLimit.objects.all()
     serializer_class = UnitLimitSerializer
     permission_classes = [IsAdminUser]
+
+    def get_object(self):
+        # همیشه فقط رکورد id=1 رو برگردون (اگه نباشه بساز)
+        obj, created = UnitLimit.objects.get_or_create(id=1)
+        return obj

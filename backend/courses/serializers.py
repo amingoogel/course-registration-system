@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Course, Prerequisite
+from .models import Course, Prerequisite, UnitLimit
 
 class CourseSerializer(serializers.ModelSerializer):
     professor_name = serializers.CharField(source='professor.get_full_name', read_only=True)
@@ -28,8 +28,8 @@ class PrerequisiteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("درس نمی‌تواند پیش‌نیاز خودش باشد")
         return data
 
-        
+
 class UnitLimitSerializer(serializers.ModelSerializer):
     class Meta:
         model = UnitLimit
-        fields = '__all__'
+        fields = ['id', 'min_units', 'max_units']
