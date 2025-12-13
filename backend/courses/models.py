@@ -33,3 +33,6 @@ class UnitLimit(models.Model):
 
     class Meta:
         verbose_name_plural = "حد واحدهای اخذ شده"
+
+    def __str__(self):
+        return f"حداقل {self.min_units} - حداکثر {self.max_units} واحد"

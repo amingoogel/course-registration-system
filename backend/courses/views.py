@@ -1,7 +1,8 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, filters
 from rest_framework.response import Response
-from .models import Course
-from .serializers import CourseSerializer
+from django_filters.rest_framework import DjangoFilterBackend
+from .models import Course, Prerequisite, UnitLimit
+from .serializers import CourseSerializer, PrerequisiteSerializer,UnitLimitSerializer
 
 class IsAdminUser(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -10,6 +11,9 @@ class IsAdminUser(permissions.BasePermission):
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all().order_by('code')
     serializer_class = CourseSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['name', 'professor__first_name', 'professor__last_name', 'code']
+    filterset_fields = ['professor', 'day']
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
