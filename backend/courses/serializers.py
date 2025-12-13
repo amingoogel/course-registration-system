@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Course
+from .models import Course, Prerequisite, UnitLimit
 
 class CourseSerializer(serializers.ModelSerializer):
     professor_name = serializers.CharField(source='professor.get_full_name', read_only=True)
@@ -16,3 +16,20 @@ class CourseSerializer(serializers.ModelSerializer):
             if Course.objects.filter(code=value).exists():
                 raise serializers.ValidationError("کد درس تکراری است")
         return value
+
+class PrerequisiteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Prerequisite
+        fields = '__all__'  
+
+    def validate(self, data):
+        if data['course'] == data['prerequisite']:
+            raise serializers.ValidationError("درس نمی‌تواند پیش‌نیاز خودش باشد")
+        return data
+
+
+class UnitLimitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UnitLimit
+        fields = ['id', 'min_units', 'max_units']
