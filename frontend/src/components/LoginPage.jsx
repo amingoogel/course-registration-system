@@ -1,12 +1,6 @@
 import { useState } from "react";
 import { loginRequest } from "./apiClient";
 
-const colors = {
-  background: "#F9F8F6",
-  card: "#EFE9E3",
-  border: "#D9CFC7",
-};
-
 function LoginPage({ onLoginSuccess }) {
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("admin");
@@ -23,7 +17,7 @@ function LoginPage({ onLoginSuccess }) {
 
       onLoginSuccess({
         accessToken,
-        role: "admin",
+        role: "admin", // مثل قبل
         username,
       });
     } catch (err) {
@@ -34,116 +28,42 @@ function LoginPage({ onLoginSuccess }) {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: colors.background,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontFamily: "sans-serif",
-        direction: "rtl",
-        padding: "16px",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "420px",
-          backgroundColor: colors.card,
-          borderRadius: "18px",
-          padding: "32px 28px",
-          boxShadow: "0 16px 40px rgba(0,0,0,0.08)",
-          border: `1px solid ${colors.border}`,
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "20px",
-            marginBottom: "25px",
-            textAlign: "center",
-          }}
-        >
-          ورود به سامانه
-        </h1>
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-slate-200 p-8 space-y-6">
+        <div className="text-center space-y-2">
+          <h1 className="text-2xl font-bold text-slate-800">ورود به سامانه</h1>
+          
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "14px",
-              marginBottom: "20px",
-            }}
-          >
-            {/* نام کاربری */}
-            <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "16px",
-                  marginBottom: "6px",
-                  fontWeight: 500,
-                }}
-              >
-                نام کاربری:
-              </label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  borderRadius: "10px",
-                  border: `1px solid ${colors.border}`,
-                  fontSize: "13px",
-                  backgroundColor: "#fff",
-                  boxSizing: "border-box",
-                }}
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">
+              نام کاربری
+            </label>
+            <input
+              type="text"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="username"
+            />
+          </div>
 
-            {/* رمز عبور */}
-            <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "16px",
-                  marginBottom: "6px",
-                  fontWeight: 500,
-                }}
-              >
-                رمز عبور:
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  borderRadius: "10px",
-                  border: `1px solid ${colors.border}`,
-                  fontSize: "13px",
-                  backgroundColor: "#fff",
-                  boxSizing: "border-box",
-                }}
-              />
-            </div>
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">
+              رمز عبور
+            </label>
+            <input
+              type="password"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+            />
           </div>
 
           {error && (
-            <div
-              style={{
-                backgroundColor: "#ffe5e5",
-                color: "#a30000",
-                borderRadius: "10px",
-                padding: "8px 10px",
-                fontSize: "12px",
-                marginBottom: "14px",
-              }}
-            >
+            <div className="rounded-xl bg-red-50 border border-red-200 px-3 py-2.5 text-xs text-red-700 leading-relaxed">
               {error}
             </div>
           )}
@@ -151,22 +71,7 @@ function LoginPage({ onLoginSuccess }) {
           <button
             type="submit"
             disabled={loading}
-            style={{
-              width: "100%",
-              padding: "12px 12px",
-              borderRadius: "12px",
-              border: "none",
-              background:
-                "linear-gradient(135deg, #D9CFC7 0%, #B6A896 100%)",
-              color: "#222",
-              fontWeight: 600,
-              fontSize: "14px",
-              cursor: loading ? "default" : "pointer",
-              opacity: loading ? 0.75 : 1,
-              transition: "transform 0.1s ease, box-shadow 0.1s ease",
-              boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-              marginTop: "8px", // فاصله از فیلد رمز
-            }}
+            className="w-full rounded-xl bg-indigo-600 text-white text-sm font-semibold py-3 shadow-md hover:bg-indigo-700 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading ? "در حال ورود..." : "ورود"}
           </button>

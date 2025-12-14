@@ -1,11 +1,6 @@
 import { useState, useEffect } from "react";
 import { fetchCourses } from "./apiClient";
 
-const colors = {
-  card: "#EFE9E3",
-  border: "#D9CFC7",
-};
-
 function Courses({ accessToken, title = "لیست دروس" }) {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,126 +25,97 @@ function Courses({ accessToken, title = "لیست دروس" }) {
     loadCourses();
   }, [accessToken]);
 
-  const cardStyle = {
-    backgroundColor: colors.card,
-    borderRadius: "16px",
-    border: `1px solid ${colors.border}`,
-    padding: "16px 18px",
-    boxSizing: "border-box",
-  };
-
-  const thStyle = {
-    padding: "8px 6px",
-    textAlign: "center",
-    borderBottom: `1px solid ${colors.border}`,
-    whiteSpace: "nowrap",
-    fontSize: "12px",
-  };
-
-  const tdStyle = {
-    padding: "6px 6px",
-    textAlign: "center",
-    borderBottom: `1px solid "#f1ece6"`,
-    fontSize: "12px",
-  };
-
   return (
-    <div style={cardStyle}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "10px",
-        }}
-      >
-        <h2
-          style={{
-            fontSize: "15px",
-            margin: 0,
-          }}
-        >
+    <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 md:p-5">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm md:text-base font-semibold text-slate-800">
           {title}
         </h2>
         {loading && (
-          <span style={{ fontSize: "12px", color: "#555" }}>
-            در حال بارگذاری...
-          </span>
+          <span className="text-xs text-slate-500">در حال بارگذاری...</span>
         )}
       </div>
 
       {message && (
-        <div
-          style={{
-            marginBottom: "8px",
-            padding: "6px 8px",
-            borderRadius: "10px",
-            fontSize: "12px",
-            backgroundColor: "#ffe5e5",
-            color: "#a30000",
-          }}
-        >
+        <div className="rounded-xl bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700 mb-3">
           {message}
         </div>
       )}
 
-      <div style={{ overflowX: "auto" }}>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            fontSize: "12px",
-          }}
-        >
-          <thead>
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-xs md:text-sm border-separate border-spacing-0">
+          <thead className="bg-slate-50">
             <tr>
-              <th style={thStyle}>کد</th>
-              <th style={thStyle}>نام درس</th>
-              <th style={thStyle}>ظرفیت</th>
-              <th style={thStyle}>واحد</th>
-              <th style={thStyle}>روز</th>
-              <th style={thStyle}>شروع کلاس</th>
-              <th style={thStyle}>پایان کلاس</th>
-              <th style={thStyle}>محل</th>
-              <th style={thStyle}>استاد</th>
+              {[
+                "کد",
+                "نام درس",
+                "ظرفیت",
+                "واحد",
+                "روز",
+                "شروع کلاس",
+                "پایان کلاس",
+                "محل",
+                "استاد",
+              ].map((head) => (
+                <th
+                  key={head}
+                  className="px-3 py-2 text-center font-medium text-slate-600 border-b border-slate-200 whitespace-nowrap"
+                >
+                  {head}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {courses.length === 0 && !loading ? (
               <tr>
-                <td style={tdStyle} colSpan={9}>
+                <td
+                  colSpan={9}
+                  className="px-3 py-4 text-center text-xs text-slate-500"
+                >
                   درسی ثبت نشده است.
                 </td>
               </tr>
             ) : (
               courses.map((course) => (
-                <tr key={course.id}>
-                  <td style={tdStyle}>{course.code}</td>
-                  <td style={tdStyle}>{course.name}</td>
-                  <td style={tdStyle}>
-                    {course.capacity !== null &&
-                    course.capacity !== undefined
-                      ? course.capacity
-                      : "-"}
+                <tr
+                  key={course.id}
+                  className="hover:bg-slate-50 transition-colors"
+                >
+                  <td className="px-3 py-2 text-center border-b border-slate-100">
+                    {course.code}
                   </td>
-                  <td style={tdStyle}>
-                    {course.units !== null &&
-                    course.units !== undefined
-                      ? course.units
-                      : "-"}
+                  <td className="px-3 py-2 text-center border-b border-slate-100">
+                    {course.name}
                   </td>
-                  <td style={tdStyle}>{course.day || "-"}</td>
-                  <td style={tdStyle}>{course.start_time || "-"}</td>
-                  <td style={tdStyle}>{course.end_time || "-"}</td>
-                  <td style={tdStyle}>{course.location || "-"}</td>
-                  <td style={tdStyle}>{course.professor || "-"}</td>
+                  <td className="px-3 py-2 text-center border-b border-slate-100">
+                    {course.capacity ?? "-"}
+                  </td>
+                  <td className="px-3 py-2 text-center border-b border-slate-100">
+                    {course.units ?? "-"}
+                  </td>
+                  <td className="px-3 py-2 text-center border-b border-slate-100">
+                    {course.day || "-"}
+                  </td>
+                  <td className="px-3 py-2 text-center border-b border-slate-100">
+                    {course.start_time || "-"}
+                  </td>
+                  <td className="px-3 py-2 text-center border-b border-slate-100">
+                    {course.end_time || "-"}
+                  </td>
+                  <td className="px-3 py-2 text-center border-b border-slate-100">
+                    {course.location || "-"}
+                  </td>
+                  <td className="px-3 py-2 text-center border-b border-slate-100">
+                    {course.professor || "-"}
+                  </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
   );
 }
 
