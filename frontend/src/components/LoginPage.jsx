@@ -2,8 +2,9 @@ import { useState } from "react";
 import { loginRequest } from "./apiClient";
 
 function LoginPage({ onLoginSuccess }) {
-  const [username, setUsername] = useState("admin");
-  const [password, setPassword] = useState("admin");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("student"); // admin | professor | student
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -17,7 +18,7 @@ function LoginPage({ onLoginSuccess }) {
 
       onLoginSuccess({
         accessToken,
-        role: "admin", // مثل قبل
+        role,
         username,
       });
     } catch (err) {
@@ -30,9 +31,34 @@ function LoginPage({ onLoginSuccess }) {
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-slate-200 p-8 space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-slate-800">ورود به سامانه</h1>
-          
+
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-slate-800">
+            ورود به سامانه
+          </h1>
+        </div>
+
+        {/* انتخاب نقش */}
+        <div className="flex justify-center gap-2">
+          {[
+            { value: "student", label: "دانشجو" },
+            { value: "professor", label: "استاد" },
+            { value: "admin", label: "ادمین" },
+          ].map((item) => (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => setRole(item.value)}
+              className={`px-4 py-2 rounded-xl text-xs font-medium border transition
+                ${
+                  role === item.value
+                    ? "bg-indigo-600 text-white border-indigo-600"
+                    : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                }`}
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -42,10 +68,9 @@ function LoginPage({ onLoginSuccess }) {
             </label>
             <input
               type="text"
-              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              autoComplete="username"
             />
           </div>
 
@@ -55,15 +80,14 @@ function LoginPage({ onLoginSuccess }) {
             </label>
             <input
               type="password"
-              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
             />
           </div>
 
           {error && (
-            <div className="rounded-xl bg-red-50 border border-red-200 px-3 py-2.5 text-xs text-red-700 leading-relaxed">
+            <div className="rounded-xl bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">
               {error}
             </div>
           )}
@@ -71,7 +95,7 @@ function LoginPage({ onLoginSuccess }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-indigo-600 text-white text-sm font-semibold py-3 shadow-md hover:bg-indigo-700 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full rounded-xl bg-indigo-600 text-white py-3 text-sm font-semibold hover:bg-indigo-700 disabled:opacity-70"
           >
             {loading ? "در حال ورود..." : "ورود"}
           </button>

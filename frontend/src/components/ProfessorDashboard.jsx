@@ -1,11 +1,12 @@
 import { useState } from "react";
-import Courses from "./Courses.jsx";
 
-function StudentDashboard({ auth, onLogout }) {
+function ProfessorDashboard({ auth, onLogout }) {
   const [view, setView] = useState("home");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
 
   const menuItemClass = (active) =>
     [
@@ -42,25 +43,19 @@ function StudentDashboard({ auth, onLogout }) {
           </button>
 
           <button
-            onClick={() => {
-              setView("courses");
-              setSidebarOpen(false);
-            }}
-            className={menuItemClass(view === "courses")}
+            disabled
+            className="w-full text-right px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 text-slate-500 cursor-not-allowed"
           >
-            <span>📄</span>
-            <span>مشاهده‌ی دروس</span>
+            <span>📚</span>
+            <span>دروس (به‌زودی)</span>
           </button>
 
           <button
-            onClick={() => {
-              setView("search");
-              setSidebarOpen(false);
-            }}
-            className={menuItemClass(view === "search")}
+            disabled
+            className="w-full text-right px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 text-slate-500 cursor-not-allowed"
           >
-            <span>🔍</span>
-            <span>جست‌وجو و فیلتر</span>
+            <span>📝</span>
+            <span>نمرات (به‌زودی)</span>
           </button>
         </nav>
       </aside>
@@ -93,10 +88,10 @@ function StudentDashboard({ auth, onLogout }) {
 
             <div className="text-right">
               <div className="text-base md:text-lg font-semibold">
-                پنل دانشجو
+                پنل استاد
               </div>
               <div className="text-xs text-slate-500">
-                دانشجو:{" "}
+                استاد:{" "}
                 <span className="font-medium">{auth.username}</span>
               </div>
             </div>
@@ -112,38 +107,15 @@ function StudentDashboard({ auth, onLogout }) {
 
         {/* محتوا */}
         <main className="flex-1 px-4 md:px-6 py-4 md:py-6 space-y-4">
-
           {view === "home" && (
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 md:p-5">
               <h2 className="text-sm font-semibold mb-2">
                 خوش آمدید 👋
               </h2>
               <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
-                از منوی سمت راست می‌توانید لیست دروس را مشاهده کرده و در آینده
-                از امکانات جست‌وجو و فیلتر استفاده کنید.
+                این پنل مخصوص اساتید است. امکانات مربوط به مدیریت دروس،
+                دانشجویان و نمرات در مراحل بعدی اضافه خواهد شد.
               </p>
-            </div>
-          )}
-
-          {view !== "home" && (
-            <div>
-              <button
-                onClick={() => setView("home")}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs md:text-sm text-slate-700 hover:bg-slate-50 shadow-sm"
-              >
-                <span>⬅</span>
-                <span>بازگشت</span>
-              </button>
-            </div>
-          )}
-
-          {view === "courses" && (
-            <Courses accessToken={auth.accessToken} title="لیست دروس" />
-          )}
-
-          {view === "search" && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-sm text-slate-600">
-              بخش جست‌وجوی دروس (در حال توسعه)
             </div>
           )}
         </main>
@@ -152,4 +124,4 @@ function StudentDashboard({ auth, onLogout }) {
   );
 }
 
-export default StudentDashboard;
+export default ProfessorDashboard;
