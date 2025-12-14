@@ -6,11 +6,6 @@ import {
   deleteCourse,
 } from "./apiClient";
 
-const colors = {
-  card: "#EFE9E3",
-  border: "#D9CFC7",
-};
-
 const emptyCourse = {
   id: null,
   code: "",
@@ -30,7 +25,7 @@ function CourseManager({ accessToken }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState(""); 
+  const [messageType, setMessageType] = useState("");
 
   useEffect(() => {
     if (!accessToken) return;
@@ -83,9 +78,7 @@ function CourseManager({ accessToken }) {
   };
 
   const handleDeleteCourse = async (courseId) => {
-    const confirmDelete = window.confirm(
-      "آیا از حذف این درس اطمینان دارید؟"
-    );
+    const confirmDelete = window.confirm("آیا از حذف این درس اطمینان دارید؟");
     if (!confirmDelete) return;
 
     try {
@@ -131,31 +124,18 @@ function CourseManager({ accessToken }) {
       ) {
         payload.start_time = selectedCourse.start_time.trim();
       }
-      if (
-        selectedCourse.end_time &&
-        selectedCourse.end_time.trim() !== ""
-      ) {
+      if (selectedCourse.end_time && selectedCourse.end_time.trim() !== "") {
         payload.end_time = selectedCourse.end_time.trim();
       }
-      if (
-        selectedCourse.location &&
-        selectedCourse.location.trim() !== ""
-      ) {
+      if (selectedCourse.location && selectedCourse.location.trim() !== "") {
         payload.location = selectedCourse.location.trim();
       }
-      if (
-        selectedCourse.professor &&
-        selectedCourse.professor.trim() !== ""
-      ) {
+      if (selectedCourse.professor && selectedCourse.professor.trim() !== "") {
         payload.professor = selectedCourse.professor.trim();
       }
 
       if (selectedCourse.id) {
-        const updated = await updateCourse(
-          accessToken,
-          selectedCourse.id,
-          payload
-        );
+        const updated = await updateCourse(accessToken, selectedCourse.id, payload);
         setCourses((prev) =>
           prev.map((c) => (c.id === updated.id ? updated : c))
         );
@@ -183,151 +163,83 @@ function CourseManager({ accessToken }) {
     setMessageType("");
   };
 
-  const containerStyle = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-    direction: "rtl",
-    fontFamily: "sans-serif",
-    boxSizing: "border-box",
-  };
-
-  const cardStyle = {
-    backgroundColor: colors.card,
-    borderRadius: "16px",
-    border: `1px solid ${colors.border}`,
-    padding: "16px 18px",
-    boxSizing: "border-box",
-  };
-
-  const labelStyle = {
-    display: "block",
-    fontSize: "12px",
-    marginBottom: "4px",
-    fontWeight: 500,
-  };
-
-  const inputStyle = {
-    width: "100%",
-    padding: "8px 10px",
-    borderRadius: "8px",
-    border: `1px solid ${colors.border}`,
-    fontSize: "12px",
-    backgroundColor: "#fff",
-    boxSizing: "border-box",
-  };
-
-  const thStyle = {
-    padding: "8px 6px",
-    textAlign: "center",
-    borderBottom: `1px solid ${colors.border}`,
-    whiteSpace: "nowrap",
-    fontSize: "12px",
-  };
-
-  const tdStyle = {
-    padding: "6px 6px",
-    textAlign: "center",
-    borderBottom: `1px solid #f1ece6`,
-    fontSize: "12px",
-  };
-
-  const actionButtonStyle = {
-    padding: "4px 8px",
-    borderRadius: "8px",
-    border: "none",
-    fontSize: "11px",
-    cursor: "pointer",
-    margin: "0 2px",
-  };
-
   return (
-    <div style={containerStyle}>
+    <div className="flex flex-col gap-4">
       {/* فرم افزودن/ویرایش درس */}
-      <div style={cardStyle}>
-        <h2
-          style={{
-            fontSize: "15px",
-            marginBottom: "10px",
-          }}
-        >
+      <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 md:p-5">
+        <h2 className="text-sm md:text-base font-semibold text-slate-800 mb-3">
           {selectedCourse.id ? "ویرایش درس" : "افزودن درس جدید"}
         </h2>
 
-        <form onSubmit={handleSubmit}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: "12px 16px",
-              marginBottom: "10px",
-            }}
-          >
-            <div>
-              <label style={labelStyle}>کد درس *</label>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-slate-700">
+                کد درس *
+              </label>
               <input
                 type="text"
-                style={inputStyle}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 value={selectedCourse.code}
-                onChange={(e) =>
-                  handleInputChange("code", e.target.value)
-                }
+                onChange={(e) => handleInputChange("code", e.target.value)}
               />
             </div>
 
-            <div>
-              <label style={labelStyle}>نام درس *</label>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-slate-700">
+                نام درس *
+              </label>
               <input
                 type="text"
-                style={inputStyle}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 value={selectedCourse.name}
-                onChange={(e) =>
-                  handleInputChange("name", e.target.value)
-                }
+                onChange={(e) => handleInputChange("name", e.target.value)}
               />
             </div>
 
-            <div>
-              <label style={labelStyle}>ظرفیت</label>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-slate-700">
+                ظرفیت
+              </label>
               <input
                 type="number"
-                style={inputStyle}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 value={selectedCourse.capacity}
-                onChange={(e) =>
-                  handleInputChange("capacity", e.target.value)
-                }
+                onChange={(e) => handleInputChange("capacity", e.target.value)}
               />
             </div>
 
-            <div>
-              <label style={labelStyle}>تعداد واحد</label>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-slate-700">
+                تعداد واحد
+              </label>
               <input
                 type="number"
-                style={inputStyle}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 value={selectedCourse.units}
-                onChange={(e) =>
-                  handleInputChange("units", e.target.value)
-                }
+                onChange={(e) => handleInputChange("units", e.target.value)}
               />
             </div>
 
-            <div>
-              <label style={labelStyle}>روز</label>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-slate-700">
+                روز
+              </label>
               <input
                 type="text"
-                style={inputStyle}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 value={selectedCourse.day}
-                onChange={(e) =>
-                  handleInputChange("day", e.target.value)
-                }
+                onChange={(e) => handleInputChange("day", e.target.value)}
               />
             </div>
 
-            <div>
-              <label style={labelStyle}>ساعت شروع (مثلاً 08:00)</label>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-slate-700">
+                ساعت شروع (مثلاً 08:00)
+              </label>
               <input
                 type="text"
-                style={inputStyle}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 value={selectedCourse.start_time}
                 onChange={(e) =>
                   handleInputChange("start_time", e.target.value)
@@ -335,11 +247,13 @@ function CourseManager({ accessToken }) {
               />
             </div>
 
-            <div>
-              <label style={labelStyle}>ساعت پایان (مثلاً 09:30)</label>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-slate-700">
+                ساعت پایان (مثلاً 09:30)
+              </label>
               <input
                 type="text"
-                style={inputStyle}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 value={selectedCourse.end_time}
                 onChange={(e) =>
                   handleInputChange("end_time", e.target.value)
@@ -347,11 +261,13 @@ function CourseManager({ accessToken }) {
               />
             </div>
 
-            <div>
-              <label style={labelStyle}>محل برگزاری</label>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-slate-700">
+                محل برگزاری
+              </label>
               <input
                 type="text"
-                style={inputStyle}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 value={selectedCourse.location}
                 onChange={(e) =>
                   handleInputChange("location", e.target.value)
@@ -359,11 +275,13 @@ function CourseManager({ accessToken }) {
               />
             </div>
 
-            <div>
-              <label style={labelStyle}>استاد</label>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-slate-700">
+                استاد
+              </label>
               <input
                 type="text"
-                style={inputStyle}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 value={selectedCourse.professor}
                 onChange={(e) =>
                   handleInputChange("professor", e.target.value)
@@ -374,47 +292,24 @@ function CourseManager({ accessToken }) {
 
           {message && (
             <div
-              style={{
-                marginBottom: "8px",
-                padding: "6px 8px",
-                borderRadius: "10px",
-                fontSize: "12px",
-                whiteSpace: "pre-line",
-                backgroundColor:
-                  messageType === "error"
-                    ? "#ffe5e5"
-                    : messageType === "success"
-                    ? "#e5ffea"
-                    : "#f5f5f5",
-                color:
-                  messageType === "error"
-                    ? "#a30000"
-                    : messageType === "success"
-                    ? "#036b21"
-                    : "#333",
-              }}
+              className={[
+                "rounded-xl px-3 py-2 text-xs leading-relaxed",
+                messageType === "error"
+                  ? "bg-red-50 border border-red-200 text-red-700"
+                  : messageType === "success"
+                  ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
+                  : "bg-slate-50 border border-slate-200 text-slate-700",
+              ].join(" ")}
             >
               {message}
             </div>
           )}
 
-          <div
-            style={{
-              display: "flex",
-              gap: "8px",
-              justifyContent: "flex-start",
-              marginTop: "4px",
-            }}
-          >
+          <div className="flex flex-wrap gap-2">
             <button
               type="submit"
               disabled={saving}
-              style={{
-                ...actionButtonStyle,
-                background:
-                  "linear-gradient(135deg, #D9CFC7 0%, #B6A896 100%)",
-                minWidth: "110px",
-              }}
+              className="inline-flex items-center justify-center rounded-xl bg-indigo-600 text-white text-xs md:text-sm px-4 py-2 shadow-sm hover:bg-indigo-700 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {saving
                 ? "در حال ذخیره..."
@@ -427,118 +322,111 @@ function CourseManager({ accessToken }) {
               <button
                 type="button"
                 onClick={handleCancelEdit}
-                style={{
-                  ...actionButtonStyle,
-                  backgroundColor: "#ddd",
-                  minWidth: "80px",
-                }}
+                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white text-xs md:text-sm px-3 py-2 text-slate-700 hover:bg-slate-50"
               >
                 انصراف
               </button>
             )}
           </div>
         </form>
-      </div>
+      </section>
 
       {/* جدول لیست دروس (مدیریت) */}
-      <div style={cardStyle}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "10px",
-          }}
-        >
-          <h2
-            style={{
-              fontSize: "15px",
-              margin: 0,
-            }}
-          >
+      <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 md:p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm md:text-base font-semibold text-slate-800">
             لیست دروس (مدیریت)
           </h2>
           {loading && (
-            <span style={{ fontSize: "12px", color: "#555" }}>
-              در حال بارگذاری...
-            </span>
+            <span className="text-xs text-slate-500">در حال بارگذاری...</span>
           )}
         </div>
 
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              fontSize: "12px",
-            }}
-          >
-            <thead>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-xs md:text-sm border-separate border-spacing-0">
+            <thead className="bg-slate-50">
               <tr>
-                <th style={thStyle}>کد</th>
-                <th style={thStyle}>نام درس</th>
-                <th style={thStyle}>ظرفیت</th>
-                <th style={thStyle}>واحد</th>
-                <th style={thStyle}>روز</th>
-                <th style={thStyle}>شروع کلاس</th>
-                <th style={thStyle}>پایان کلاس</th>
-                <th style={thStyle}>محل</th>
-                <th style={thStyle}>استاد</th>
-                <th style={thStyle}>عملیات</th>
+                {[
+                  "کد",
+                  "نام درس",
+                  "ظرفیت",
+                  "واحد",
+                  "روز",
+                  "شروع کلاس",
+                  "پایان کلاس",
+                  "محل",
+                  "استاد",
+                  "عملیات",
+                ].map((head) => (
+                  <th
+                    key={head}
+                    className="px-3 py-2 text-center font-medium text-slate-600 border-b border-slate-200 whitespace-nowrap"
+                  >
+                    {head}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {courses.length === 0 && !loading ? (
                 <tr>
-                  <td style={tdStyle} colSpan={10}>
+                  <td
+                    colSpan={10}
+                    className="px-3 py-4 text-center text-xs text-slate-500"
+                  >
                     درسی ثبت نشده است.
                   </td>
                 </tr>
               ) : (
                 courses.map((course) => (
-                  <tr key={course.id}>
-                    <td style={tdStyle}>{course.code}</td>
-                    <td style={tdStyle}>{course.name}</td>
-                    <td style={tdStyle}>
-                      {course.capacity !== null &&
-                      course.capacity !== undefined
-                        ? course.capacity
-                        : "-"}
+                  <tr
+                    key={course.id}
+                    className="hover:bg-slate-50 transition-colors"
+                  >
+                    <td className="px-3 py-2 text-center border-b border-slate-100">
+                      {course.code}
                     </td>
-                    <td style={tdStyle}>
-                      {course.units !== null &&
-                      course.units !== undefined
-                        ? course.units
-                        : "-"}
+                    <td className="px-3 py-2 text-center border-b border-slate-100">
+                      {course.name}
                     </td>
-                    <td style={tdStyle}>{course.day || "-"}</td>
-                    <td style={tdStyle}>{course.start_time || "-"}</td>
-                    <td style={tdStyle}>{course.end_time || "-"}</td>
-                    <td style={tdStyle}>{course.location || "-"}</td>
-                    <td style={tdStyle}>{course.professor || "-"}</td>
-                    <td style={tdStyle}>
-                      <button
-                        type="button"
-                        onClick={() => handleEditClick(course)}
-                        style={{
-                          ...actionButtonStyle,
-                          backgroundColor: "#e3e0ff",
-                        }}
-                      >
-                        ویرایش
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleDeleteCourse(course.id)
-                        }
-                        style={{
-                          ...actionButtonStyle,
-                          backgroundColor: "#ffd6d6",
-                        }}
-                      >
-                        حذف
-                      </button>
+                    <td className="px-3 py-2 text-center border-b border-slate-100">
+                      {course.capacity ?? "-"}
+                    </td>
+                    <td className="px-3 py-2 text-center border-b border-slate-100">
+                      {course.units ?? "-"}
+                    </td>
+                    <td className="px-3 py-2 text-center border-b border-slate-100">
+                      {course.day || "-"}
+                    </td>
+                    <td className="px-3 py-2 text-center border-b border-slate-100">
+                      {course.start_time || "-"}
+                    </td>
+                    <td className="px-3 py-2 text-center border-b border-slate-100">
+                      {course.end_time || "-"}
+                    </td>
+                    <td className="px-3 py-2 text-center border-b border-slate-100">
+                      {course.location || "-"}
+                    </td>
+                    <td className="px-3 py-2 text-center border-b border-slate-100">
+                      {course.professor || "-"}
+                    </td>
+                    <td className="px-3 py-2 text-center border-b border-slate-100">
+                      <div className="flex flex-wrap justify-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleEditClick(course)}
+                          className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs hover:bg-indigo-100"
+                        >
+                          ویرایش
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCourse(course.id)}
+                          className="px-2.5 py-1 rounded-lg bg-red-50 text-red-700 text-xs hover:bg-red-100"
+                        >
+                          حذف
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -546,7 +434,7 @@ function CourseManager({ accessToken }) {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
