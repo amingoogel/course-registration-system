@@ -2,10 +2,11 @@ import { useState } from "react";
 import LoginPage from "./components/LoginPage.jsx";
 import AdminDashboard from "./components/AdminDashboard.jsx";
 
+
 function App() {
   const [authState, setAuthState] = useState({
     accessToken: null,
-    role: null, 
+    role: null,
     username: null,
   });
 
@@ -21,12 +22,15 @@ function App() {
     return <LoginPage onLoginSuccess={handleLoginSuccess} />;
   }
 
+  // فعلاً فقط پنل ادمین
   return (
     <AdminDashboard
       auth={authState}
       onLogout={handleLogout}
     />
   );
+
+
 }
 
 export default App;
