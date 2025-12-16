@@ -19,6 +19,36 @@ const emptyCourse = {
   professor: "",
 };
 
+const weekDays = [
+  "شنبه",
+  "یکشنبه",
+  "دوشنبه",
+  "سه‌شنبه",
+  "چهارشنبه",
+];
+
+const startTimes = ["08:00", "10:00", "14:00", "16:00"];
+
+const endTimes = ["10:00", "12:00", "16:00", "18:00"];
+
+const startToEndMap = {
+  "08:00": "10:00",
+  "10:00": "12:00",
+  "14:00": "16:00",
+  "16:00": "18:00",
+};
+
+const locations = [
+  "کلاس ۱۰۱",
+  "کلاس ۱۰۲",
+  "کلاس ۱۰۳",
+  "کلاس ۲۰۱",
+  "کلاس ۲۰۲",
+  "کلاس ۲۰۳",
+];
+
+
+
 function CourseManager({ accessToken }) {
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(emptyCourse);
@@ -133,6 +163,18 @@ function CourseManager({ accessToken }) {
         return;
       }
     }
+
+    // چک زمان کلاس: end باید دقیقاً ۲ ساعت بعد start 
+    if (selectedCourse.start_time) {
+      const expectedEnd = startToEndMap[selectedCourse.start_time] || "";
+      if (!expectedEnd || selectedCourse.end_time !== expectedEnd) {
+        setErrors((prev) => ({ ...prev, end_time: true }));
+        setMessageType("error");
+        setMessage("ساعت پایان باید دقیقاً ۲ ساعت بعد از ساعت شروع باشد.");
+        return;
+      }
+    }
+
 
 
 
@@ -286,54 +328,107 @@ function CourseManager({ accessToken }) {
               <label className="block text-xs font-medium text-slate-700">
                 روز
               </label>
-              <input
-                type="text"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              <select
                 value={selectedCourse.day}
                 onChange={(e) => handleInputChange("day", e.target.value)}
-              />
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">انتخاب روز</option>
+                {weekDays.map((day) => (
+                  <option key={day} value={day}>
+                    {day}
+                  </option>
+                ))}
+              </select>
+
             </div>
 
             <div className="space-y-1">
               <label className="block text-xs font-medium text-slate-700">
-                ساعت شروع (مثلاً 08:00)
+                ساعت شروع 
               </label>
-              <input
-                type="text"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              <select
                 value={selectedCourse.start_time}
-                onChange={(e) =>
-                  handleInputChange("start_time", e.target.value)
-                }
-              />
+                onChange={(e) => {
+                  const start = e.target.value;
+                  handleInputChange("start_time", start);
+
+                  // اگر start انتخاب شد، end را خودکار ۲ ساعت بعد بگذار
+                  const expectedEnd = startToEndMap[start] || "";
+                  handleInputChange("end_time", expectedEnd);
+
+                  // خطای end_time را پاک کن (اگر داشتی)
+                  setErrors((prev) => ({ ...prev, end_time: false }));
+                }}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">انتخاب ساعت شروع</option>
+                {Object.keys(startToEndMap).map((time) => (
+                  <option key={time} value={time}>
+                    {time}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-1">
               <label className="block text-xs font-medium text-slate-700">
-                ساعت پایان (مثلاً 09:30)
+                ساعت پایان
               </label>
-              <input
-                type="text"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              <select
                 value={selectedCourse.end_time}
-                onChange={(e) =>
-                  handleInputChange("end_time", e.target.value)
-                }
-              />
+                onChange={(e) => {
+                  const end = e.target.value;
+                  handleInputChange("end_time", end);
+
+                  const expected = startToEndMap[selectedCourse.start_time] || "";
+                  const invalid = expected && end !== expected;
+
+                  setErrors((prev) => ({ ...prev, end_time: invalid }));
+
+                  if (invalid) {
+                    setMessageType("error");
+                    setMessage("ساعت پایان باید دقیقاً ۲ ساعت بعد از ساعت شروع باشد.");
+                  } else {
+                    // اگر درست شد، پیام خطا را پاک نکنیم اگر پیام دیگری هست
+                    // ولی حداقل error end_time رفع می‌شود
+                  }
+                }}
+                className={`w-full rounded-lg bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2
+                  ${errors.end_time
+                    ? "border border-red-500 focus:ring-red-500"
+                    : "border border-slate-300 focus:ring-indigo-500"}
+                `}
+                disabled={!selectedCourse.start_time}
+              >
+                <option value="">انتخاب ساعت پایان</option>
+
+                {/* فقط گزینه درست را نشان بده */}
+                {selectedCourse.start_time &&
+                  startToEndMap[selectedCourse.start_time] && (
+                    <option value={startToEndMap[selectedCourse.start_time]}>
+                      {startToEndMap[selectedCourse.start_time]}
+                    </option>
+                  )}
+              </select>
             </div>
 
             <div className="space-y-1">
               <label className="block text-xs font-medium text-slate-700">
                 محل برگزاری
               </label>
-              <input
-                type="text"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              <select
                 value={selectedCourse.location}
-                onChange={(e) =>
-                  handleInputChange("location", e.target.value)
-                }
-              />
+                onChange={(e) => handleInputChange("location", e.target.value)}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">انتخاب محل برگزاری</option>
+                {locations.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-1">
