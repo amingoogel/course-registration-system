@@ -26,6 +26,7 @@ function CourseManager({ accessToken }) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (!accessToken) return;
@@ -95,12 +96,45 @@ function CourseManager({ accessToken }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
+    setErrors({});
 
     if (!selectedCourse.code || !selectedCourse.name) {
       setMessageType("error");
       setMessage("فیلدهای کد درس و نام درس اجباری هستند.");
       return;
     }
+
+      // کد درس
+    if (!/^\d{7}$/.test(selectedCourse.code)) {
+      setErrors({ code: true });
+      setMessageType("error");
+      setMessage("کد درس باید دقیقاً ۷ رقم و فقط عدد باشد.");
+      return;
+    }
+
+    // ظرفیت
+    if (selectedCourse.capacity !== "") {
+      const cap = Number(selectedCourse.capacity);
+      if (cap < 20 || cap > 60) {
+        setErrors({ capacity: true });
+        setMessageType("error");
+        setMessage("ظرفیت باید عددی بین ۲۰ تا ۶۰ باشد.");
+        return;
+      }
+    }
+
+    // واحد
+    if (selectedCourse.units !== "") {
+      const u = Number(selectedCourse.units);
+      if (u < 1 || u > 4) {
+        setErrors({ units: true });
+        setMessageType("error");
+        setMessage("تعداد واحد باید عددی بین ۱ تا ۴ باشد.");
+        return;
+      }
+    }
+
+
 
     setSaving(true);
     try {
@@ -171,7 +205,7 @@ function CourseManager({ accessToken }) {
           {selectedCourse.id ? "ویرایش درس" : "افزودن درس جدید"}
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} noValidate className="space-y-3">
           <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-1">
               <label className="block text-xs font-medium text-slate-700">
@@ -179,10 +213,22 @@ function CourseManager({ accessToken }) {
               </label>
               <input
                 type="text"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                inputMode="numeric"
+                pattern="\d{7}"
+                maxLength={7}
+                className={`w-full rounded-lg bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2
+                  ${errors.code
+                    ? "border border-red-500 focus:ring-red-500"
+                    : "border border-slate-300 focus:ring-indigo-500"}
+                `}
+
                 value={selectedCourse.code}
-                onChange={(e) => handleInputChange("code", e.target.value)}
+                onChange={(e) => {
+                  const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 7);
+                  handleInputChange("code", digitsOnly);
+                }}
               />
+
             </div>
 
             <div className="space-y-1">
@@ -203,10 +249,18 @@ function CourseManager({ accessToken }) {
               </label>
               <input
                 type="number"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                min={20}
+                max={60}
+                className={`w-full rounded-lg bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2
+                  ${errors.capacity
+                    ? "border border-red-500 focus:ring-red-500"
+                    : "border border-slate-300 focus:ring-indigo-500"}
+                `}
+
                 value={selectedCourse.capacity}
                 onChange={(e) => handleInputChange("capacity", e.target.value)}
               />
+
             </div>
 
             <div className="space-y-1">
@@ -215,7 +269,14 @@ function CourseManager({ accessToken }) {
               </label>
               <input
                 type="number"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                min={1}
+                max={4}
+                className={`w-full rounded-lg bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2
+                  ${errors.units
+                    ? "border border-red-500 focus:ring-red-500"
+                    : "border border-slate-300 focus:ring-indigo-500"}
+                `}
+
                 value={selectedCourse.units}
                 onChange={(e) => handleInputChange("units", e.target.value)}
               />
