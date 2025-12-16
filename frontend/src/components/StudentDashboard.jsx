@@ -17,7 +17,6 @@ function StudentDashboard({ auth, onLogout }) {
 
   return (
     <div className="min-h-screen flex bg-slate-100 text-slate-900">
-
       {/* سایدبار */}
       <aside
         className={[
@@ -75,7 +74,6 @@ function StudentDashboard({ auth, onLogout }) {
 
       {/* محتوای اصلی */}
       <div className="flex-1 flex flex-col min-h-screen">
-
         {/* هدر */}
         <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white/80 backdrop-blur border-b border-slate-200 sticky top-0 z-10">
           <div className="flex items-center gap-3">
@@ -92,12 +90,9 @@ function StudentDashboard({ auth, onLogout }) {
             </button>
 
             <div className="text-right">
-              <div className="text-base md:text-lg font-semibold">
-                پنل دانشجو
-              </div>
+              <div className="text-base md:text-lg font-semibold">پنل دانشجو</div>
               <div className="text-xs text-slate-500">
-                دانشجو:{" "}
-                <span className="font-medium">{auth.username}</span>
+                دانشجو: <span className="font-medium">{auth.username}</span>
               </div>
             </div>
           </div>
@@ -112,15 +107,12 @@ function StudentDashboard({ auth, onLogout }) {
 
         {/* محتوا */}
         <main className="flex-1 px-4 md:px-6 py-4 md:py-6 space-y-4">
-
           {view === "home" && (
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 md:p-5">
-              <h2 className="text-sm font-semibold mb-2">
-                خوش آمدید 👋
-              </h2>
+              <h2 className="text-sm font-semibold mb-2">خوش آمدید 👋</h2>
               <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
-                از منوی سمت راست می‌توانید لیست دروس را مشاهده کرده و در آینده
-                از امکانات جست‌وجو و فیلتر استفاده کنید.
+                از منوی سمت راست می‌توانید لیست دروس را مشاهده کرده و از امکانات
+                جست‌وجو و فیلتر استفاده کنید.
               </p>
             </div>
           )}
@@ -141,10 +133,9 @@ function StudentDashboard({ auth, onLogout }) {
             <Courses accessToken={auth.accessToken} title="لیست دروس" />
           )}
 
+          {/* ✅ اینجا قبلاً placeholder بود، الان واقعی شد */}
           {view === "search" && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-sm text-slate-600">
-              بخش جست‌وجوی دروس (در حال توسعه)
-            </div>
+            <Courses accessToken={auth.accessToken} title="جست‌وجو و فیلتر دروس" />
           )}
         </main>
       </div>
