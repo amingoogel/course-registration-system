@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from .models import Course, Prerequisite, UnitLimit
-from .serializers import CourseSerializer, PrerequisiteSerializer,UnitLimitSerializer
+from .serializers import CourseSerializer, PrerequisiteSerializer,UnitLimitSerializer, ProfessorSerializer
 
 class IsAdminUser(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -40,3 +40,9 @@ class UnitLimitViewSet(viewsets.ModelViewSet):
         # همیشه فقط رکورد id=1 رو برگردون (اگه نباشه بساز)
         obj, created = UnitLimit.objects.get_or_create(id=1)
         return obj
+
+class ProfessorListView(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.filter(role='professor').order_by('last_name')
+    serializer_class = ProfessorSerializer
+
+    permission_classes = [IsAdminUser]

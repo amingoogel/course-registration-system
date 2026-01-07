@@ -6,5 +6,6 @@ router = DefaultRouter()
 router.register(r'courses', CourseViewSet, basename='course')
 router.register(r'prerequisites', PrerequisiteViewSet, basename='prerequisite')
 router.register(r'unit-limit', UnitLimitViewSet, basename='unitlimit')
+router.register(r'professors', ProfessorListView, basename='professor-list')
 
 urlpatterns = router.urls
