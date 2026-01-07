@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Course, Prerequisite, UnitLimit
+from users.models import User
 
 class CourseSerializer(serializers.ModelSerializer):
     professor_name = serializers.CharField(source='professor.get_full_name', read_only=True)

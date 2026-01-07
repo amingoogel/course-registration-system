@@ -36,7 +36,7 @@ class SelectionViewSet(viewsets.ModelViewSet):
     def delete_selection(self, request, pk=None):
         if request.user.role != 'student':
             return Response({"error": "فقط دانشجویان می‌توانند درس حذف کنند."}, status=status.HTTP_403_FORBIDDEN)
-        course = get_object_or_4 or4(Course, id=pk)
+        course = get_object_or_404(Course, id=pk)
         try:
             SelectionService().delete_selection(request.user, course)
             return Response({"success": "درس با موفقیت حذف شد."})

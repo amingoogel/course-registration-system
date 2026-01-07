@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from .models import Course, Prerequisite, UnitLimit
+from users.models import User
 from .serializers import CourseSerializer, PrerequisiteSerializer,UnitLimitSerializer, ProfessorSerializer
 
 class IsAdminUser(permissions.BasePermission):
