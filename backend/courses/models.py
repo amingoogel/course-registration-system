@@ -1,5 +1,6 @@
 from django.db import models
 from users.models import User
+from django.core.validators import MinValueValidator
 
 class Course(models.Model):
     code = models.CharField("کد درس", max_length=20, unique=True)
@@ -7,7 +8,11 @@ class Course(models.Model):
     professor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                   limit_choices_to={'role': 'professor'}, related_name='courses')
     capacity = models.PositiveIntegerField("ظرفیت", default=30)
-    units = models.PositiveIntegerField("تعداد واحد", default=3)
+    units = models.PositiveIntegerField(
+        "تعداد واحد",
+        default=3,
+        validators=[MinValueValidator(1)],  # حداقل ۱
+    )
     day = models.CharField("روز برگزاری", max_length=20, default="شنبه")
     start_time = models.TimeField("ساعت شروع", null=True, blank=True)
     end_time = models.TimeField("ساعت پایان", null=True, blank=True)

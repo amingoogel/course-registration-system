@@ -33,7 +33,7 @@ class PrerequisiteSerializer(serializers.ModelSerializer):
 class UnitLimitSerializer(serializers.ModelSerializer):
     class Meta:
         model = UnitLimit
-        fields = ['id', 'min_units', 'max_units']
+        fields = ['min_units', 'max_units']
 
 class ProfessorSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
