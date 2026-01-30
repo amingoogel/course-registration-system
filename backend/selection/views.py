@@ -93,6 +93,40 @@ class SelectionViewSet(viewsets.ModelViewSet):
             "total_units": total_units
         })
 
+    @action(detail=False, methods=['get'], url_path='report-card')
+    def get_report_card(self, request):
+        term_id = request.query_params.get('term_id')
+        if not term_id:
+            return Response({"error": "نیم‌سال را مشخص کنید"}, status=400)
+
+        term = get_object_or_404(Term, id=term_id)
+        selections = CourseSelection.objects.filter(student=request.user, course__term=term, is_finalized=True)
+        data = []
+        total_units = 0
+        total_score = 0
+
+        for sel in selections:
+            grade = Grade.objects.filter(selection=sel).first()
+            score = grade.score if grade else "نامشخص"
+            status = grade.status if grade else "نامشخص"
+            data.append({
+                "course": sel.course.name,
+                "units": sel.course.units,
+                "score": score,
+                "status": status
+            })
+            if score != "نامشخص":
+                total_units += sel.course.units
+                total_score += score * sel.course.units
+
+        gpa = total_score / total_units if total_units > 0 else 0
+
+        return Response({
+            "term": term.name,
+            "courses": data,
+            "gpa": round(gpa, 2)
+        })
+
 class ProfessorViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
