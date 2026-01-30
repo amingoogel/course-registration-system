@@ -9,6 +9,12 @@ class SelectionService:
 
     @transaction.atomic
     def select_course(self, student, course):
+        if not course.term.is_active:
+            errors.append("مهلت انتخاب واحد برای این نیم‌سال تمام شده است.")
+
+
+    @transaction.atomic
+    def select_course(self, student, course):
         errors = []
 
         # قانون ۱: بررسی تکرار
@@ -70,3 +76,11 @@ class SelectionService:
         selection.delete()
         course.enrolled_count -= 1
         course.save()
+
+    def has_passed_prereq(self, student, prereq):
+    previous_selection = CourseSelection.objects.filter(student=student, course=prereq, is_finalized=True).first()
+    if previous_selection:
+        grade = Grade.objects.filter(selection=previous_selection).first()
+        if grade and grade.score >= 10:
+            return True
+    return False
