@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from .models import User
 from .serializers import RegisterStudentSerializer, RegisterProfessorSerializer
+from rest_framework.views import APIView
+from .serializers import UserSerializer 
 
 class IsAdminUser(IsAuthenticated):
     def has_permission(self, request, view):
@@ -27,3 +29,10 @@ class UserRegistrationViewSet(viewsets.ViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CurrentUserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)

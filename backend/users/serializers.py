@@ -56,3 +56,8 @@ class RegisterProfessorSerializer(serializers.ModelSerializer):
             "password": "کد ملی وارد شده",
             "full_name": instance.get_full_name()
         }
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'role']
