@@ -60,6 +60,39 @@ class SelectionViewSet(viewsets.ModelViewSet):
             })
         return Response(schedule)
 
+    @action(detail=False, methods=['post'], url_path='finalize')
+    def finalize(self, request):
+        if request.user.role != 'student':
+            return Response({"detail": "فقط دانشجویان می‌توانند انتخاب واحد را نهایی کنند"}, status=403)
+
+    # گرفتن تمام انتخاب‌های این دانشجو که هنوز نهایی نشده‌اند
+        selections = CourseSelection.objects.filter(student=request.user, is_finalized=False)
+
+        if not selections.exists():
+            return Response({"detail": "هیچ درسی انتخاب نشده است"}, status=400)
+
+        total_units = selections.aggregate(total=Sum('course__units'))['total'] or 0
+
+        limit = UnitLimit.objects.first() or UnitLimit(min_units=12, max_units=20)
+
+        if total_units < limit.min_units:
+            return Response({
+                "detail": f"تعداد واحد انتخاب‌شده ({total_units}) کمتر از حداقل مجاز ({limit.min_units}) است"
+            }, status=400)
+
+        if total_units > limit.max_units:
+            return Response({
+                "detail": f"تعداد واحد انتخاب‌شده ({total_units}) بیشتر از حداکثر مجاز ({limit.max_units}) است"
+            }, status=400)
+
+    # نهایی کردن
+        selections.update(is_finalized=True)
+
+        return Response({
+            "detail": "انتخاب واحد با موفقیت نهایی شد",
+            "total_units": total_units
+        })
+
 class ProfessorViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 

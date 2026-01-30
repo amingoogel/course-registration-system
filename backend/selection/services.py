@@ -32,10 +32,12 @@ class SelectionService:
         # قانون ۵: بررسی حد واحد
         current_units = self.repo.get_student_current_units(student)
         limit = UnitLimit.objects.first() or UnitLimit(min_units=12, max_units=20)
-        if current_units + course.units > limit.max_units:
-            errors.append("حداکثر واحد مجاز رعایت نشده.")
-        if current_units + course.units < limit.min_units:
-            errors.append("حداقل واحد مجاز رعایت نشده.")
+        new_total = current_units + course.units
+
+        if new_total > limit.max_units:
+            errors.append(f"حداکثر واحد مجاز ({limit.max_units}) رعایت نشده است.")
+
+        # حداقل رو اینجا چک نمی‌کنیم → اجازه می‌دیم کمتر انتخاب کنه
 
         # قانون ۶: بررسی حذف مجاز (برای حذف)
         # قانون ۷: بررسی حذف دانشجو از درس مجاز (برای استاد)
