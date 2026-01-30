@@ -17,6 +17,7 @@ class Course(models.Model):
     start_time = models.TimeField("ساعت شروع", null=True, blank=True)
     end_time = models.TimeField("ساعت پایان", null=True, blank=True)
     location = models.CharField("محل برگزاری", max_length=100, blank=True)
+    term = models.ForeignKey(Term, on_delete=models.CASCADE, related_name='courses')
 
     def __str__(self):
         return f"{self.code} - {self.name}"
@@ -41,3 +42,13 @@ class UnitLimit(models.Model):
 
     def __str__(self):
         return f"حداقل {self.min_units} - حداکثر {self.max_units} واحد"
+
+
+class Term(models.Model):
+    name = models.CharField("نام نیم‌سال", max_length=100, unique=True, help_text="مثل نیم‌سال اول ۱۴۰۴")
+    start_selection = models.DateTimeField("شروع انتخاب واحد")
+    end_selection = models.DateTimeField("پایان انتخاب واحد")
+    is_active = models.BooleanField("فعال", default=False)
+
+    def __str__(self):
+        return self.name
