@@ -57,6 +57,14 @@ class SelectionService:
         course.save()
         return selection
 
+    def has_passed_prereq(self, student, prereq):
+        previous_selection = CourseSelection.objects.filter(student=student, course=prereq, is_finalized=True).first()
+        if previous_selection:
+            grade = Grade.objects.filter(selection=previous_selection).first()
+            if grade and grade.score >= 10:
+                return True
+        return False
+
     @transaction.atomic
     def delete_selection(self, student, course):
         selection = CourseSelection.objects.filter(student=student, course=course).first()
@@ -77,10 +85,3 @@ class SelectionService:
         course.enrolled_count -= 1
         course.save()
 
-    def has_passed_prereq(self, student, prereq):
-    previous_selection = CourseSelection.objects.filter(student=student, course=prereq, is_finalized=True).first()
-    if previous_selection:
-        grade = Grade.objects.filter(selection=previous_selection).first()
-        if grade and grade.score >= 10:
-            return True
-    return False

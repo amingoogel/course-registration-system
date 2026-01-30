@@ -1,6 +1,7 @@
 from django.db import models
 from users.models import User
 from courses.models import Course
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class CourseSelection(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='selections', limit_choices_to={'role': 'student'})
@@ -13,7 +14,7 @@ class CourseSelection(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.course} {'(نهایی)' if self.is_finalized else ''}"
-        
+
 
 class Grade(models.Model):
     selection = models.OneToOneField(CourseSelection, on_delete=models.CASCADE)
