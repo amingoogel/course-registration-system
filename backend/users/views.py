@@ -2,10 +2,9 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from .models import User
-from .serializers import RegisterStudentSerializer, RegisterProfessorSerializer
+from .models import User, LoginHistory
+from .serializers import RegisterStudentSerializer, RegisterProfessorSerializer, UserSerializer , LoginHistorySerializer
 from rest_framework.views import APIView
-from .serializers import UserSerializer 
 
 class IsAdminUser(IsAuthenticated):
     def has_permission(self, request, view):
@@ -36,3 +35,18 @@ class CurrentUserAPIView(APIView):
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+
+class LoginHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+
+    serializer_class = LoginHistorySerializer
+    permission_classes = [IsAuthenticated]
+
+
+    def get_queryset(self):
+        user = self.request.user
+        
+        if user.role == 'admin':
+            return LoginHistory.objects.all().order_by('-login_at')
+
+        return LoginHistory.objects.filter(user=user).order_by('-login_at')
