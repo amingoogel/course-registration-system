@@ -25,10 +25,20 @@ class CourseSerializer(serializers.ModelSerializer):
         return value
 
 class PrerequisiteSerializer(serializers.ModelSerializer):
+    course_code = serializers.SlugRelatedField(
+        slug_field='code', queryset=Course.objects.all(),
+        write_only=True, source='course'
+    )
+    prerequisite_code = serializers.SlugRelatedField(
+        slug_field='code', queryset=Course.objects.all(),
+        write_only=True, source='prerequisite'
+    )
+    course = serializers.SlugRelatedField(slug_field='code', read_only=True)
+    prerequisite = serializers.SlugRelatedField(slug_field='code', read_only=True)
 
     class Meta:
         model = Prerequisite
-        fields = '__all__'  
+        fields = ['id', 'course', 'prerequisite', 'course_code', 'prerequisite_code']
 
     def validate(self, data):
         if data['course'] == data['prerequisite']:

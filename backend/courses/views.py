@@ -16,6 +16,8 @@ class IsAdminUser(permissions.BasePermission):
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all().order_by('code')
     serializer_class = CourseSerializer
+    lookup_field = 'code'
+    lookup_url_kwarg = 'code'
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['name', 'professor__first_name', 'professor__last_name', 'code']
     filterset_fields = ['professor', 'day']

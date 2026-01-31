@@ -27,8 +27,10 @@ class SelectionViewSet(viewsets.ModelViewSet):
     def select_course(self, request):
         if request.user.role != 'student':
             return Response({"error": "فقط دانشجویان می‌توانند درس انتخاب کنند."}, status=status.HTTP_403_FORBIDDEN)
-        course_id = request.data.get('course_id')
-        course = get_object_or_404(Course, id=course_id)
+        course_code = request.data.get('course_code')
+        if not course_code:
+            return Response({"error": "کد درس (course_code) الزامی است."}, status=status.HTTP_400_BAD_REQUEST)
+        course = get_object_or_404(Course, code=course_code)
         try:
             selection = SelectionService().select_course(request.user, course)
             serializer = self.serializer_class(selection)
@@ -36,11 +38,14 @@ class SelectionViewSet(viewsets.ModelViewSet):
         except ValidationError as e:
             return Response({"errors": e.messages}, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['delete'], url_path='delete-selection')
-    def delete_selection(self, request, pk=None):
+    @action(detail=False, methods=['delete'], url_path='delete-selection')
+    def delete_selection(self, request):
         if request.user.role != 'student':
             return Response({"error": "فقط دانشجویان می‌توانند درس حذف کنند."}, status=status.HTTP_403_FORBIDDEN)
-        course = get_object_or_404(Course, id=pk)
+        course_code = request.query_params.get('course_code')
+        if not course_code:
+            return Response({"error": "کد درس (course_code) الزامی است."}, status=status.HTTP_400_BAD_REQUEST)
+        course = get_object_or_404(Course, code=course_code)
         try:
             SelectionService().delete_selection(request.user, course)
             return Response({"success": "درس با موفقیت حذف شد."})
@@ -138,7 +143,7 @@ class ProfessorViewSet(viewsets.ViewSet):
     def get_students(self, request, pk=None):
         if request.user.role != 'professor':
             return Response({"error": "فقط اساتید می‌توانند لیست دانشجویان ببینند."}, status=status.HTTP_403_FORBIDDEN)
-        course = get_object_or_404(Course, id=pk, professor=request.user)
+        course = get_object_or_404(Course, code=pk, professor=request.user)
         students = CourseSelection.objects.filter(course=course).order_by('student__last_name')
         serializer = CourseSelectionSerializer(students, many=True)
         return Response(serializer.data)
@@ -147,9 +152,11 @@ class ProfessorViewSet(viewsets.ViewSet):
     def remove_student(self, request, pk=None):
         if request.user.role != 'professor':
             return Response({"error": "فقط اساتید می‌توانند دانشجو حذف کنند."}, status=status.HTTP_403_FORBIDDEN)
-        course = get_object_or_404(Course, id=pk, professor=request.user)
-        student_id = request.data.get('student_id')
-        student = get_object_or_404(User, id=student_id, role='student')
+        course = get_object_or_404(Course, code=pk, professor=request.user)
+        student_number = request.query_params.get('student_number') or request.data.get('student_number')
+        if not student_number:
+            return Response({"error": "شماره دانشجویی (student_number) الزامی است."}, status=status.HTTP_400_BAD_REQUEST)
+        student = get_object_or_404(User, username=student_number, role='student')
         try:
             SelectionService().professor_delete_student(request.user, course, student)
             return Response({"success": "دانشجو با موفقیت حذف شد."})
