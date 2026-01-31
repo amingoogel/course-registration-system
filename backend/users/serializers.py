@@ -64,14 +64,23 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class LoginHistorySerializer(serializers.ModelSerializer):
+    user_display = serializers.SerializerMethodField()
+
     class Meta:
         model = LoginHistory
         fields = [
             'id',
+            'user',
+            'user_display',
             'login_at',
             'ip_address',
             'user_agent',
             'is_success',
-            'failure_reason'
+            'failure_reason',
         ]
-        read_only_fields = fields 
+        read_only_fields = fields
+
+    def get_user_display(self, obj):
+        if obj.user:
+            return f"{obj.user.get_full_name()} ({obj.user.username})"
+        return None

@@ -39,7 +39,7 @@ class User(AbstractUser):
 User = get_user_model()
 
 class LoginHistory(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='login_history')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='login_history', null=True, blank=True)
     login_at = models.DateTimeField("زمان ورود", auto_now_add=True)
     ip_address = models.GenericIPAddressField("آدرس IP", null=True, blank=True)
     user_agent = models.TextField("مرورگر/دستگاه", blank=True, null=True)

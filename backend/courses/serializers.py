@@ -1,6 +1,12 @@
 from rest_framework import serializers
-from .models import Course, Prerequisite, UnitLimit
+from .models import Course, Prerequisite, UnitLimit, Term
 from users.models import User
+
+
+class TermSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Term
+        fields = ['id', 'name', 'start_selection', 'end_selection', 'is_active']
 
 class CourseSerializer(serializers.ModelSerializer):
     professor_name = serializers.CharField(source='professor.get_full_name', read_only=True)
@@ -19,10 +25,20 @@ class CourseSerializer(serializers.ModelSerializer):
         return value
 
 class PrerequisiteSerializer(serializers.ModelSerializer):
+    course_code = serializers.SlugRelatedField(
+        slug_field='code', queryset=Course.objects.all(),
+        write_only=True, source='course'
+    )
+    prerequisite_code = serializers.SlugRelatedField(
+        slug_field='code', queryset=Course.objects.all(),
+        write_only=True, source='prerequisite'
+    )
+    course = serializers.SlugRelatedField(slug_field='code', read_only=True)
+    prerequisite = serializers.SlugRelatedField(slug_field='code', read_only=True)
 
     class Meta:
         model = Prerequisite
-        fields = '__all__'  
+        fields = ['id', 'course', 'prerequisite', 'course_code', 'prerequisite_code']
 
     def validate(self, data):
         if data['course'] == data['prerequisite']:
