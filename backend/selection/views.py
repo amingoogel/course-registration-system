@@ -52,6 +52,23 @@ class SelectionViewSet(viewsets.ModelViewSet):
         except ValidationError as e:
             return Response({"errors": e.messages}, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=False, methods=['get'], url_path='draft')
+    def draft_selections(self, request):
+        """لیست دروس انتخاب‌شده قبل از نهایی کردن انتخاب واحد (فقط دانشجو)"""
+        if request.user.role != 'student':
+            return Response({"error": "فقط دانشجویان می‌توانند لیست انتخاب واحد خود را ببینند."}, status=status.HTTP_403_FORBIDDEN)
+        selections = CourseSelection.objects.filter(student=request.user, is_finalized=False)
+        data = [
+            {
+                "course_code": sel.course.code,
+                "course_name": sel.course.name,
+                "units": sel.course.units,
+            }
+            for sel in selections
+        ]
+        total_units = sum(s["units"] for s in data)
+        return Response({"courses": data, "total_units": total_units})
+
     @action(detail=False, methods=['get'], url_path='schedule')
     def get_schedule(self, request):
         if request.user.role != 'student':

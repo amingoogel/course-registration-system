@@ -37,6 +37,29 @@ class PrerequisiteViewSet(viewsets.ModelViewSet):
     serializer_class = PrerequisiteSerializer
     permission_classes = [IsAdminUser]
 
+
+class CoursesWithPrerequisitesAPIView(APIView):
+    """لیست دروسی که پیش‌نیاز دارند - فقط کد درس و کد پیش‌نیازها"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # دروس یکتا که حداقل یک پیش‌نیاز دارند
+        course_codes_with_prereqs = (
+            Prerequisite.objects.values_list('course__code', flat=True)
+            .distinct()
+        )
+        result = []
+        for course_code in course_codes_with_prereqs:
+            prereq_codes = list(
+                Prerequisite.objects.filter(course__code=course_code)
+                .values_list('prerequisite__code', flat=True)
+            )
+            result.append({
+                "course_code": course_code,
+                "prerequisite_codes": prereq_codes,
+            })
+        return Response(result)
+
 class UnitLimitAPIView(APIView):
     permission_classes = [IsAuthenticated]
 

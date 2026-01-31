@@ -1,6 +1,13 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import CourseViewSet, PrerequisiteViewSet, UnitLimitAPIView, ProfessorListView, TermViewSet
+from .views import (
+    CourseViewSet,
+    PrerequisiteViewSet,
+    UnitLimitAPIView,
+    ProfessorListView,
+    TermViewSet,
+    CoursesWithPrerequisitesAPIView,
+)
 
 router = DefaultRouter()
 router.register(r'courses', CourseViewSet, basename='course')
@@ -13,4 +20,5 @@ urlpatterns = router.urls
 
 urlpatterns += [
     path('unit-limit/', UnitLimitAPIView.as_view(), name='unit-limit'),
+    path('courses-with-prerequisites/', CoursesWithPrerequisitesAPIView.as_view(), name='courses-with-prerequisites'),
 ]
