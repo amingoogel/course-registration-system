@@ -3,7 +3,11 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from .models import Course, Prerequisite, UnitLimit
-from .serializers import CourseSerializer, PrerequisiteSerializer,UnitLimitSerializer
+from users.models import User
+from .serializers import CourseSerializer, PrerequisiteSerializer,UnitLimitSerializer, ProfessorSerializer
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+
 
 class IsAdminUser(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -31,12 +35,36 @@ class PrerequisiteViewSet(viewsets.ModelViewSet):
     serializer_class = PrerequisiteSerializer
     permission_classes = [IsAdminUser]
 
-class UnitLimitViewSet(viewsets.ModelViewSet):
-    queryset = UnitLimit.objects.all()
-    serializer_class = UnitLimitSerializer
-    permission_classes = [IsAdminUser]
+class UnitLimitAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    def get_object(self):
-        # همیشه فقط رکورد id=1 رو برگردون (اگه نباشه بساز)
-        obj, created = UnitLimit.objects.get_or_create(id=1)
-        return obj
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAuthenticated()]
+        return [IsAdminUser()]
+
+    def get(self, request):
+        limit = UnitLimit.objects.first()
+        if not limit:
+            limit = UnitLimit.objects.create()  # اگر وجود نداشت بساز
+        serializer = UnitLimitSerializer(limit)
+        return Response(serializer.data)
+
+    def post(self, request):
+        # اگر رکورد وجود داشت، بروزرسانی کن
+        limit = UnitLimit.objects.first()
+        if limit:
+            serializer = UnitLimitSerializer(limit, data=request.data, partial=True)
+        else:
+            serializer = UnitLimitSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK if limit else status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ProfessorListView(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.filter(role='professor').order_by('last_name')
+    serializer_class = ProfessorSerializer
+
+    permission_classes = [IsAdminUser]

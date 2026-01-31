@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Course, Prerequisite, UnitLimit
+from users.models import User
 
 class CourseSerializer(serializers.ModelSerializer):
     professor_name = serializers.CharField(source='professor.get_full_name', read_only=True)
@@ -32,4 +33,14 @@ class PrerequisiteSerializer(serializers.ModelSerializer):
 class UnitLimitSerializer(serializers.ModelSerializer):
     class Meta:
         model = UnitLimit
-        fields = ['id', 'min_units', 'max_units']
+        fields = ['min_units', 'max_units']
+
+class ProfessorSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['id', 'full_name']
+
+    def get_full_name(self, obj):
+        return obj.get_full_name()

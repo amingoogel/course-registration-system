@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, LoginHistory
 
 class RegisterStudentSerializer(serializers.ModelSerializer):
     student_number = serializers.CharField(write_only=True, help_text="شماره دانشجویی - میشه یوزرنیم")
@@ -56,3 +56,22 @@ class RegisterProfessorSerializer(serializers.ModelSerializer):
             "password": "کد ملی وارد شده",
             "full_name": instance.get_full_name()
         }
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'role']
+
+
+class LoginHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LoginHistory
+        fields = [
+            'id',
+            'login_at',
+            'ip_address',
+            'user_agent',
+            'is_success',
+            'failure_reason'
+        ]
+        read_only_fields = fields 

@@ -47,11 +47,13 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'django_filters',
+    'drf_yasg',
     
 
     # Local apps
     'users',
     'courses',
+    'selection',
 
 ]
 
@@ -137,6 +139,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+   ## 'DEFAULT_SCHEMA_CLASS': 'drf_yasg.openapi.AutoSchema',
 }
 
 
