@@ -1,6 +1,12 @@
 from rest_framework import serializers
-from .models import Course, Prerequisite, UnitLimit
+from .models import Course, Prerequisite, UnitLimit, Term
 from users.models import User
+
+
+class TermSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Term
+        fields = ['id', 'name', 'start_selection', 'end_selection', 'is_active']
 
 class CourseSerializer(serializers.ModelSerializer):
     professor_name = serializers.CharField(source='professor.get_full_name', read_only=True)

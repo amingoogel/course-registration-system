@@ -2,9 +2,9 @@ from rest_framework import viewsets, status, permissions, filters
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
-from .models import Course, Prerequisite, UnitLimit
+from .models import Course, Prerequisite, UnitLimit, Term
 from users.models import User
-from .serializers import CourseSerializer, PrerequisiteSerializer,UnitLimitSerializer, ProfessorSerializer
+from .serializers import CourseSerializer, PrerequisiteSerializer, UnitLimitSerializer, ProfessorSerializer, TermSerializer
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
@@ -68,3 +68,26 @@ class ProfessorListView(viewsets.ReadOnlyModelViewSet):
     serializer_class = ProfessorSerializer
 
     permission_classes = [IsAdminUser]
+
+
+class TermViewSet(viewsets.ModelViewSet):
+    """مدیریت نیم‌سال‌ها - ادمین: CRUD + فعال/غیرفعال | دانشجو/استاد: فقط مشاهده"""
+    queryset = Term.objects.all().order_by('-start_selection')
+    serializer_class = TermSerializer
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.IsAuthenticated()]
+        return [IsAdminUser()]
+
+    @action(detail=True, methods=['post'], url_path='toggle-active')
+    def toggle_active(self, request, pk=None):
+        """فعال/غیرفعال کردن انتخاب واحد برای این نیم‌سال"""
+        term = self.get_object()
+        term.is_active = not term.is_active
+        term.save()
+        status_text = "فعال" if term.is_active else "غیرفعال"
+        return Response({
+            "detail": f"نیم‌سال {term.name} با موفقیت {status_text} شد.",
+            "is_active": term.is_active
+        })

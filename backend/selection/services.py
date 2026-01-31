@@ -9,13 +9,13 @@ class SelectionService:
 
     @transaction.atomic
     def select_course(self, student, course):
-        if not course.term.is_active:
-            errors.append("مهلت انتخاب واحد برای این نیم‌سال تمام شده است.")
-
-
-    @transaction.atomic
-    def select_course(self, student, course):
         errors = []
+
+        # قانون ۰: بررسی فعال بودن نیم‌سال
+        if not course.term:
+            errors.append("این درس به نیم‌سال مشخصی تخصیص داده نشده است.")
+        elif not course.term.is_active:
+            errors.append("مهلت انتخاب واحد برای این نیم‌سال تمام شده است.")
 
         # قانون ۱: بررسی تکرار
         if self.repo.selection_exists(student, course):
@@ -70,6 +70,8 @@ class SelectionService:
         selection = CourseSelection.objects.filter(student=student, course=course).first()
         if not selection:
             raise ValidationError("این درس اخذ نشده است.")
+        if course.term and not course.term.is_active:
+            raise ValidationError("مهلت انتخاب واحد برای این نیم‌سال تمام شده است.")
         selection.delete()
         course.enrolled_count -= 1
         course.save()
