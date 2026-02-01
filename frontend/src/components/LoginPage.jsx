@@ -1,25 +1,5 @@
 import { useState } from "react";
-import { loginRequest } from "./apiClient";
-
-// ✅ Decode JWT (Base64URL)
-function decodeJwt(token) {
-  try {
-    const payloadBase64Url = token.split(".")[1];
-    if (!payloadBase64Url) return null;
-
-    const payloadBase64 = payloadBase64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = decodeURIComponent(
-      atob(payloadBase64)
-        .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-        .join("")
-    );
-
-    return JSON.parse(jsonPayload);
-  } catch {
-    return null;
-  }
-}
+import { loginRequest, fetchMe } from "./apiClient";
 
 function LoginPage({ onLoginSuccess }) {
   const [username, setUsername] = useState("");
@@ -35,20 +15,13 @@ function LoginPage({ onLoginSuccess }) {
     try {
       const { accessToken } = await loginRequest(username, password);
 
-      // ✅ نقش واقعی را از خود JWT بخوان
-      const payload = decodeJwt(accessToken);
-
-      const realRole =
-        payload?.role ||
-        payload?.user_role ||
-        payload?.type ||
-        payload?.userType;
-
-      const realUsername =
-        payload?.username || payload?.user || payload?.sub || username;
+      // ✅ نقش و اطلاعات کاربر از /api/users/me/ گرفته می‌شود
+      const me = await fetchMe(accessToken);
+      const realRole = me?.role;
+      const realUsername = me?.username || username;
 
       if (!realRole) {
-        setError("نقش کاربر داخل توکن پیدا نشد. (JWT ناقص است)");
+        setError("نقش کاربر از سرور دریافت نشد.");
         return;
       }
 
@@ -58,7 +31,7 @@ function LoginPage({ onLoginSuccess }) {
         username: realUsername,
       });
     } catch (err) {
-      setError("نام کاربری یا رمز عبور اشتباه است.");
+      setError(err?.message || "نام کاربری یا رمز عبور اشتباه است.");
     } finally {
       setLoading(false);
     }

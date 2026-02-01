@@ -38,9 +38,46 @@ export async function loginRequest(username, password) {
   };
 }
 
+// =======================
+// AUTH / CURRENT USER
+// =======================
+
+// GET /api/users/me/
+export async function fetchMe(accessToken) {
+  const res = await fetch(`${BASE_URL}/api/users/me/`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  return handleResponse(res);
+}
+
+// GET /api/users/login-history/
+export async function fetchLoginHistory(accessToken) {
+  const res = await fetch(`${BASE_URL}/api/users/login-history/`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  return handleResponse(res);
+}
+
 // GET /api/courses/
 export async function fetchCourses(accessToken) {
   const res = await fetch(`${BASE_URL}/api/courses/`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  return handleResponse(res);
+}
+
+// GET /api/courses-with-prerequisites/
+export async function fetchCoursesWithPrerequisites(accessToken) {
+  const res = await fetch(`${BASE_URL}/api/courses-with-prerequisites/`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
@@ -158,9 +195,9 @@ export async function deletePrerequisite(accessToken, prerequisiteId) {
 // UNIT LIMITS API
 // =======================
 
-// GET /api/unit-limits/1/
+// ✅ جدید: GET /api/unit-limit/
 export async function fetchUnitLimit(accessToken) {
-  const res = await fetch(`${BASE_URL}/api/unit-limits/1/`, {
+  const res = await fetch(`${BASE_URL}/api/unit-limit/`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
@@ -172,9 +209,9 @@ export async function fetchUnitLimit(accessToken) {
   return handleResponse(res);
 }
 
-// POST /api/unit-limits/
+// ✅ جدید: POST /api/unit-limit/
 export async function createUnitLimit(accessToken, payload) {
-  const res = await fetch(`${BASE_URL}/api/unit-limits/`, {
+  const res = await fetch(`${BASE_URL}/api/unit-limit/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -186,15 +223,77 @@ export async function createUnitLimit(accessToken, payload) {
   return handleResponse(res);
 }
 
-// PUT /api/unit-limits/1/
+// ✅ بک‌اند جدید با POST هم آپدیت می‌کند؛ این را نگه می‌داریم برای سازگاری.
 export async function updateUnitLimit(accessToken, payload) {
-  const res = await fetch(`${BASE_URL}/api/unit-limits/1/`, {
+  const res = await fetch(`${BASE_URL}/api/unit-limit/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return handleResponse(res);
+}
+
+// =======================
+// TERMS
+// =======================
+
+// GET /api/terms/
+export async function fetchTerms(accessToken) {
+  const res = await fetch(`${BASE_URL}/api/terms/`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  return handleResponse(res);
+}
+
+// GET /api/terms/:id/
+export async function fetchTermDetail(accessToken, termId) {
+  const res = await fetch(`${BASE_URL}/api/terms/${termId}/`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  return handleResponse(res);
+}
+
+// POST /api/terms/
+export async function createTerm(accessToken, payload) {
+  const res = await fetch(`${BASE_URL}/api/terms/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return handleResponse(res);
+}
+
+// PUT /api/terms/:id/
+export async function updateTerm(accessToken, termId, payload) {
+  const res = await fetch(`${BASE_URL}/api/terms/${termId}/`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify(payload),
+  });
+
+  return handleResponse(res);
+}
+
+// POST /api/terms/:id/toggle-active/
+export async function toggleTermActive(accessToken, termId) {
+  const res = await fetch(`${BASE_URL}/api/terms/${termId}/toggle-active/`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
   });
 
   return handleResponse(res);
@@ -258,7 +357,132 @@ export async function registerProfessor(accessToken, payload) {
 
 // GET professors
 export async function fetchProfessors(accessToken) {
-  const res = await fetch(`${BASE_URL}/api/users/professors/`, {
+  // ✅ جدید: لیست اساتید
+  const res = await fetch(`${BASE_URL}/api/professors/`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  return handleResponse(res);
+}
+
+// =======================
+// COURSE SELECTION (STUDENT)
+// =======================
+
+// GET /api/selection/selections/draft/
+export async function fetchDraftSelections(accessToken) {
+  const res = await fetch(`${BASE_URL}/api/selection/selections/draft/`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  return handleResponse(res);
+}
+
+// POST /api/selection/selections/select-course/
+export async function selectCourse(accessToken, courseCode) {
+  const res = await fetch(
+    `${BASE_URL}/api/selection/selections/select-course/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ course_code: courseCode }),
+    }
+  );
+
+  return handleResponse(res);
+}
+
+// DELETE /api/selection/selections/select-course/
+export async function removeCourseFromDraft(accessToken, courseCode) {
+  const res = await fetch(
+    `${BASE_URL}/api/selection/selections/select-course/`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ course_code: courseCode }),
+    }
+  );
+
+  return handleResponse(res);
+}
+
+// POST /api/selection/selections/finalize/
+export async function finalizeSelection(accessToken) {
+  const res = await fetch(`${BASE_URL}/api/selection/selections/finalize/`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  return handleResponse(res);
+}
+
+// GET /api/selection/selections/
+export async function fetchFinalSelections(accessToken) {
+  const res = await fetch(`${BASE_URL}/api/selection/selections/`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  return handleResponse(res);
+}
+
+// GET /api/selection/selections/schedule/
+export async function fetchWeeklySchedule(accessToken) {
+  const res = await fetch(`${BASE_URL}/api/selection/selections/schedule/`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  return handleResponse(res);
+}
+
+// GET /api/selection/selections/report-card/?term_id=...
+export async function fetchReportCard(accessToken, termId) {
+  const url = new URL(`${BASE_URL}/api/selection/selections/report-card/`);
+  if (termId !== undefined && termId !== null && termId !== "") {
+    url.searchParams.set("term_id", String(termId));
+  }
+
+  const res = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  return handleResponse(res);
+}
+
+// =======================
+// PROFESSOR
+// =======================
+
+// GET /api/selection/professor/:course_code/students/
+export async function fetchProfessorCourseStudents(accessToken, courseCode) {
+  const res = await fetch(
+    `${BASE_URL}/api/selection/professor/${encodeURIComponent(
+      courseCode
+    )}/students/`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }
+  );
+
+  return handleResponse(res);
+}
+
+// POST /api/selection/professor/:course_code/remove-student/?student_number=...
+export async function removeStudentFromCourse(accessToken, courseCode, studentNumber) {
+  const url = new URL(
+    `${BASE_URL}/api/selection/professor/${encodeURIComponent(
+      courseCode
+    )}/remove-student/`
+  );
+  url.searchParams.set("student_number", String(studentNumber));
+
+  const res = await fetch(url.toString(), {
+    method: "POST",
     headers: { Authorization: `Bearer ${accessToken}` },
   });
 
