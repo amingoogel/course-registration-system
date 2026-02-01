@@ -7,6 +7,8 @@ import Courses from "../Management/Courses.jsx";
 import PrerequisiteManager from "../Management/PrerequisiteManager.jsx";
 import UnitLimitManager from "../Management/UnitLimitManager.jsx";
 import UserRegisterManager from "../Management/UserRegisterManager.jsx";
+import TermManager from "../Management/TermManager.jsx";
+import LoginHistory from "../Management/LoginHistory.jsx";
 
 
 function AdminDashboard({ auth, onLogout }) {
@@ -21,6 +23,7 @@ function AdminDashboard({ auth, onLogout }) {
     { key: "users", label: "مدیریت کاربران", icon: "👤" },
     { key: "managePrerequisites", label: "مدیریت پیش‌نیازها", icon: "📘" },
     { key: "manageUnits", label: "تعیین حد واحدها", icon: "🧮" },
+    { key: "terms", label: "نیم‌سال‌ها", icon: "🗓️" },
   ];
 
   return (
@@ -36,13 +39,18 @@ function AdminDashboard({ auth, onLogout }) {
       onChangeView={setView}
     >
       {view === "home" && (
-        <GlassCard className="p-5">
-          <h2 className="text-sm font-bold mb-2">خوش آمدید 👋</h2>
-          <p className="text-xs md:text-sm text-slate-700 leading-6">
-            از منوی سمت راست می‌توانید دروس، پیش‌نیازها و تنظیمات انتخاب واحد را
-            مدیریت کنید.
-          </p>
-        </GlassCard>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-1">
+            <LoginHistory accessToken={auth.accessToken} accentColor={accentColor} />
+          </div>
+          <GlassCard className="p-5 md:col-span-2">
+            <h2 className="text-sm font-bold mb-2">خوش آمدید 👋</h2>
+            <p className="text-xs md:text-sm text-slate-700 leading-6">
+              از منوی سمت راست می‌توانید دروس، پیش‌نیازها، نیم‌سال‌ها و تنظیمات انتخاب واحد را
+              مدیریت کنید.
+            </p>
+          </GlassCard>
+        </div>
       )}
 
       {view !== "home" && (
@@ -84,6 +92,12 @@ function AdminDashboard({ auth, onLogout }) {
       {view === "manageUnits" && (
         <GlassCard className="p-4 md:p-5">
           <UnitLimitManager accessToken={auth.accessToken} />
+        </GlassCard>
+      )}
+
+      {view === "terms" && (
+        <GlassCard className="p-4 md:p-5">
+          <TermManager accessToken={auth.accessToken} />
         </GlassCard>
       )}
     </DashboardLayout>
