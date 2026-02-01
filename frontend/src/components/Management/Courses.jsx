@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchCourses } from "../apiClient";
+import { fetchCoursesWithPrerequisites } from "../apiClient";
 
 function Courses({ accessToken, title = "لیست دروس", accentColor = "#64748b" }) {
   const [courses, setCourses] = useState([]);
@@ -17,7 +17,7 @@ function Courses({ accessToken, title = "لیست دروس", accentColor = "#647
       setLoading(true);
       setMessage("");
       try {
-        const data = await fetchCourses(accessToken);
+        const data = await fetchCoursesWithPrerequisites(accessToken);
         setCourses(Array.isArray(data) ? data : []);
       } catch (err) {
         setMessage(err.message || "خطا در دریافت لیست دروس.");
@@ -48,6 +48,37 @@ function Courses({ accessToken, title = "لیست دروس", accentColor = "#647
   const clearFilters = () => {
     setCourseQuery("");
     setProfQuery("");
+  };
+
+  const renderPrerequisites = (course) => {
+    // بک‌اند ممکن است یکی از این ساختارها را برگرداند
+    const list =
+      course.prerequisites ||
+      course.prerequisite_codes ||
+      course.prereqs ||
+      course.prerequisite_list;
+
+    if (!list) return null;
+
+    const codes = Array.isArray(list)
+      ? list
+          .map((x) =>
+            typeof x === "string"
+              ? x
+              : x?.code || x?.prerequisite_code || x?.course_code
+          )
+          .filter(Boolean)
+      : typeof list === "string"
+      ? list.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+
+    if (!codes.length) return null;
+
+    return (
+      <div className="mt-1 text-[11px] text-slate-500">
+        پیش‌نیاز: <span className="font-medium text-slate-600">{codes.join("، ")}</span>
+      </div>
+    );
   };
 
   return (
@@ -153,7 +184,10 @@ function Courses({ accessToken, title = "لیست دروس", accentColor = "#647
                       {course.code}
                     </td>
                     <td className="px-3 py-2 text-center border-b border-slate-100">
-                      {course.name}
+                      <div className="leading-tight">
+                        <div>{course.name}</div>
+                        {renderPrerequisites(course)}
+                      </div>
                     </td>
                     <td className="px-3 py-2 text-center border-b border-slate-100">
                       {course.capacity ?? "-"}
