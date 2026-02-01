@@ -20,6 +20,14 @@ async function handleResponse(response) {
   return data;
 }
 
+
+function normalizeList(data) {
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.results)) return data.results;
+  if (data && Array.isArray(data.data)) return data.data;
+  return [];
+}
+
 // Login 
 export async function loginRequest(username, password) {
   const res = await fetch(`${BASE_URL}/api/token/`, {
@@ -72,19 +80,108 @@ export async function fetchCourses(accessToken) {
     },
   });
 
-  return handleResponse(res);
+  const data = await handleResponse(res);
+  return normalizeList(data);
 }
 
-// GET /api/courses-with-prerequisites/
+
+// GET /api/courses-with-prerequisites/ (fallback -> /api/courses/)
 export async function fetchCoursesWithPrerequisites(accessToken) {
-  const res = await fetch(`${BASE_URL}/api/courses-with-prerequisites/`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  try {
+    const res = await fetch(`${BASE_URL}/api/courses-with-prerequisites/`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-  return handleResponse(res);
+    const data = await handleResponse(res);
+    return normalizeList(data);
+  } catch (e) {
+    // اگر این endpoint در بک‌اند فعال نبود یا خطا داد، از لیست معمولی دروس استفاده کن
+    const data = await fetchCourses(accessToken);
+    return normalizeList(data);
+  }
 }
+
+// ===================================
+// COURSES (ENRICHED WITH PREREQUISITES)
+// ===================================
+
+function extractPrereqCodesFromCourseLike(courseLike) {
+  const list =
+    courseLike?.prerequisites ||
+    courseLike?.prerequisite_codes ||
+    courseLike?.prereqs ||
+    courseLike?.prerequisite_list;
+
+  if (!list) return [];
+
+  const codes = Array.isArray(list)
+    ? list
+        .map((x) =>
+          typeof x === "string"
+            ? x
+            : x?.code || x?.prerequisite_code || x?.course_code
+        )
+        .filter(Boolean)
+    : typeof list === "string"
+    ? list
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
+
+  return [...new Set(codes)];
+}
+
+async function fetchPrerequisiteMap(accessToken) {
+  // خروجی: { [course_code]: [prerequisite_code, ...] }
+  // 1) ترجیحاً /api/courses-with-prerequisites/
+  try {
+    const list = await fetchCoursesWithPrerequisites(accessToken);
+    const map = {};
+    for (const c of Array.isArray(list) ? list : []) {
+      const code = c?.code || c?.course_code;
+      if (!code) continue;
+      const prereqs = extractPrereqCodesFromCourseLike(c);
+      if (prereqs.length) map[code] = prereqs;
+    }
+    if (Object.keys(map).length) return map;
+  } catch (e) {
+    // ignore
+  }
+
+  // 2) fallback: /api/prerequisites/
+  try {
+    const list = await fetchPrerequisites(accessToken);
+    const map = {};
+    for (const row of Array.isArray(list) ? list : []) {
+      const courseCode = row?.course_code || row?.course?.code || row?.course;
+      const prereqCode =
+        row?.prerequisite_code || row?.prerequisite?.code || row?.prerequisite;
+      if (!courseCode || !prereqCode) continue;
+      map[courseCode] = map[courseCode] || [];
+      map[courseCode].push(prereqCode);
+    }
+    for (const k of Object.keys(map)) {
+      map[k] = [...new Set(map[k])];
+    }
+    return map;
+  } catch (e) {
+    return {};
+  }
+}
+
+// ✅ جدید: ابتدا courses را از /api/courses/ می‌گیرد، سپس اگر پیش‌نیاز داشت اضافه می‌کند
+export async function fetchCoursesEnriched(accessToken) {
+  const courses = await fetchCourses(accessToken);
+  const prereqMap = await fetchPrerequisiteMap(accessToken);
+  return (Array.isArray(courses) ? courses : []).map((c) => ({
+    ...c,
+    prerequisite_codes: prereqMap[c?.code] || [],
+  }));
+}
+
 
 // POST /api/courses/
 export async function createCourse(accessToken, coursePayload) {
@@ -146,9 +243,9 @@ export async function fetchPrerequisites(accessToken) {
     },
   });
 
-  return handleResponse(res);
+  const data = await handleResponse(res);
+  return normalizeList(data);
 }
-
 // POST /api/prerequisites/
 export async function createPrerequisite(accessToken, prerequisitePayload) {
   const res = await fetch(`${BASE_URL}/api/prerequisites/`, {

@@ -52,12 +52,6 @@ function CourseSelection({ accessToken, accentColor = "#64748b" }) {
       setDraft(Array.isArray(draftData) ? draftData : []);
       setFinalList(Array.isArray(finalData) ? finalData : []);
       setUnitLimit(unitData || null);
-
-      // مقدار پیش‌فرض
-      if (!selectedCode) {
-        const first = (Array.isArray(courseData) ? courseData : [])[0];
-        if (first?.code) setSelectedCode(first.code);
-      }
     } catch (e) {
       setError(e?.message || "خطا در دریافت اطلاعات انتخاب واحد.");
     } finally {
@@ -72,13 +66,15 @@ function CourseSelection({ accessToken, accentColor = "#64748b" }) {
   }, [accessToken]);
 
   const handleAdd = async () => {
-    if (!selectedCode) return;
+    const code = String(selectedCode || "").trim();
+    if (!code) return;
     setSaving(true);
     setError("");
     setMsg("");
     try {
-      await selectCourse(accessToken, selectedCode);
+      await selectCourse(accessToken, code);
       setMsg("درس به لیست موقت اضافه شد.");
+      setSelectedCode("");
       const draftData = await fetchDraftSelections(accessToken);
       setDraft(Array.isArray(draftData) ? draftData : []);
     } catch (e) {
@@ -125,15 +121,6 @@ function CourseSelection({ accessToken, accentColor = "#64748b" }) {
     }
   };
 
-  const draftCodeSet = useMemo(() => {
-    const set = new Set();
-    draft.forEach((d) => {
-      const code = d?.code || d?.course_code;
-      if (code) set.add(code);
-    });
-    return set;
-  }, [draft]);
-
   return (
     <div className="space-y-4">
       <section className="rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden">
@@ -160,20 +147,17 @@ function CourseSelection({ accessToken, accentColor = "#64748b" }) {
           <div className="grid gap-3 md:grid-cols-3 items-end">
             <div className="md:col-span-2 space-y-1">
               <label className="block text-xs font-medium text-slate-700">انتخاب درس</label>
-              <select
+              <input
                 value={selectedCode}
                 onChange={(e) => setSelectedCode(e.target.value)}
+                placeholder="مثلاً 7777101"
                 className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
-              >
-                {courses.map((c) => (
-                  <option key={c.id ?? c.code} value={c.code}>
-                    {c.code} — {c.name} ({c.units ?? "-"} واحد)
-                    {draftCodeSet.has(c.code) ? "  ✅" : ""}
-                  </option>
-                ))}
-              </select>
+              />
               <div className="text-[11px] text-slate-500">
-                ✅ کنار درس یعنی در لیست موقت است.
+                فقط کد درس را وارد کن (بدون فاصله).
+                {courses?.length > 0 && (
+                  <span className="block mt-1">نمونه کدها: {courses.slice(0, 6).map((c) => c.code).join("، ")}{courses.length > 6 ? "…" : ""}</span>
+                )}
               </div>
             </div>
 
@@ -336,12 +320,7 @@ function CourseSelection({ accessToken, accentColor = "#64748b" }) {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* نکتهٔ کوچک */}
-      <div className="text-[11px] text-slate-500">
-        نکته: قوانین پیش‌نیاز/ظرفیت/بازهٔ انتخاب واحد توسط بک‌اند کنترل می‌شود.
-      </div>
+      </section> 
     </div>
   );
 }

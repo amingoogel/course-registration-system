@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchCoursesWithPrerequisites } from "../apiClient";
+import { fetchCoursesEnriched } from "../apiClient";
 
 function Courses({ accessToken, title = "لیست دروس", accentColor = "#64748b" }) {
   const [courses, setCourses] = useState([]);
@@ -17,7 +17,7 @@ function Courses({ accessToken, title = "لیست دروس", accentColor = "#647
       setLoading(true);
       setMessage("");
       try {
-        const data = await fetchCoursesWithPrerequisites(accessToken);
+        const data = await fetchCoursesEnriched(accessToken);
         setCourses(Array.isArray(data) ? data : []);
       } catch (err) {
         setMessage(err.message || "خطا در دریافت لیست دروس.");

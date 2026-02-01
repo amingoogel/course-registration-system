@@ -17,10 +17,16 @@ function formatDate(iso) {
   }
 }
 
-function LoginHistory({ accessToken, accentColor = "#64748b", title = "تاریخچه ورود" }) {
+function LoginHistory({
+  accessToken,
+  accentColor = "#64748b",
+  title = "تاریخچه ورود",
+  pageSize = 4,
+}) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -31,6 +37,7 @@ function LoginHistory({ accessToken, accentColor = "#64748b", title = "تاری�
       try {
         const data = await fetchLoginHistory(accessToken);
         setItems(Array.isArray(data) ? data : []);
+        setPage(1);
       } catch (e) {
         setItems([]);
         setError(e?.message || "خطا در دریافت تاریخچه ورود.");
@@ -43,7 +50,6 @@ function LoginHistory({ accessToken, accentColor = "#64748b", title = "تاری�
   }, [accessToken]);
 
   const rows = useMemo(() => {
-    // جدیدترین بالا
     return [...items].sort((a, b) => {
       const ta = new Date(a?.login_at || 0).getTime();
       const tb = new Date(b?.login_at || 0).getTime();
@@ -51,14 +57,69 @@ function LoginHistory({ accessToken, accentColor = "#64748b", title = "تاری�
     });
   }, [items]);
 
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const safePage = Math.min(Math.max(1, page), totalPages);
+
+  const pagedRows = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return rows.slice(start, start + pageSize);
+  }, [rows, safePage, pageSize]);
+
+  const canPrev = safePage > 1;
+  const canNext = safePage < totalPages;
+
   return (
     <section className="rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden">
       <div className="h-2 w-full" style={{ backgroundColor: accentColor }} />
 
       <div className="p-4 md:p-5">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm md:text-base font-semibold text-slate-800">{title}</h2>
-          {loading && <span className="text-xs text-slate-500">در حال بارگذاری...</span>}
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div>
+            <h2 className="text-sm md:text-base font-semibold text-slate-800">{title}</h2>
+            <div className="text-[11px] text-slate-500 mt-1">
+              {rows.length ? `نمایش ${Math.min(pageSize, rows.length)} مورد از ${rows.length}` : "—"}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {loading && <span className="text-xs text-slate-500">در حال بارگذاری...</span>}
+
+            {!loading && rows.length > pageSize && (
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  disabled={!canPrev}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  className={[
+                    "px-3 py-1 rounded-xl text-xs border transition",
+                    canPrev
+                      ? "bg-white hover:bg-slate-50 border-slate-200 text-slate-700"
+                      : "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed",
+                  ].join(" ")}
+                >
+                  قبلی
+                </button>
+
+                <span className="text-xs text-slate-500 px-1">
+                  {safePage} / {totalPages}
+                </span>
+
+                <button
+                  type="button"
+                  disabled={!canNext}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  className={[
+                    "px-3 py-1 rounded-xl text-xs border transition",
+                    canNext
+                      ? "bg-white hover:bg-slate-50 border-slate-200 text-slate-700"
+                      : "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed",
+                  ].join(" ")}
+                >
+                  بعدی
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {error && (
@@ -88,10 +149,13 @@ function LoginHistory({ accessToken, accentColor = "#64748b", title = "تاری�
                   </td>
                 </tr>
               ) : (
-                rows.map((r) => {
+                pagedRows.map((r) => {
                   const ok = Boolean(r?.is_success);
                   return (
-                    <tr key={r?.id ?? `${r?.login_at}-${r?.ip_address}`} className="hover:bg-slate-50 transition">
+                    <tr
+                      key={r?.id ?? `${r?.login_at}-${r?.ip_address}`}
+                      className="hover:bg-slate-50 transition"
+                    >
                       <td className="px-3 py-2 text-center border-b border-slate-100 whitespace-nowrap">
                         {formatDate(r?.login_at)}
                       </td>

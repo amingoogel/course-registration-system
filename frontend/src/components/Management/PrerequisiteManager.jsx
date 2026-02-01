@@ -24,8 +24,8 @@ function PrerequisiteManager({ accessToken, accentColor = "#64748b" }) {
         const courseData = await fetchCourses(accessToken);
         const prereqData = await fetchPrerequisites(accessToken);
         setCourses(Array.isArray(courseData) ? courseData : []);
-        setPrerequisites(Array.isArray(prereqData) ? prereqData : []);
-      } catch (err) {
+        setPrerequisites(Array.isArray(prereqData) ? prereqData : (prereqData?.results ?? []));
+} catch (err) {
         setMessageType("error");
         setMessage("خطا در دریافت اطلاعات.");
       } finally {
@@ -35,6 +35,18 @@ function PrerequisiteManager({ accessToken, accentColor = "#64748b" }) {
 
     loadData();
   }, [accessToken]);
+
+  const normalizePrereqRow = (row) => {
+  const course_code = row?.course_code ?? row?.course?.code ?? row?.course ?? "";
+  const prerequisite_code =
+    row?.prerequisite_code ?? row?.prerequisite?.code ?? row?.prerequisite ?? "";
+  return { ...row, course_code, prerequisite_code };
+};
+
+const normalizePrereqList = (list) => {
+  const arr = Array.isArray(list) ? list : [];
+  return arr.map(normalizePrereqRow).filter((r) => r.course_code && r.prerequisite_code);
+};
 
   const findCourseByCode = (code) => courses.find((c) => c.code === code);
 
@@ -53,8 +65,8 @@ function PrerequisiteManager({ accessToken, accentColor = "#64748b" }) {
 
     try {
       const created = await createPrerequisite(accessToken, {
-        course: course.id,
-        prerequisite: prereq.id,
+        course_code: course.code,
+        prerequisite_code: prereq.code,
       });
 
       setPrerequisites((prev) => [...prev, created]);
@@ -163,10 +175,10 @@ function PrerequisiteManager({ accessToken, accentColor = "#64748b" }) {
                 {prerequisites.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50 transition">
                     <td className="px-3 py-2 text-center border-b border-slate-100">
-                      {p.course_code}
+                      {p.course_code ?? p.course?.code ?? p.course ?? "-"}
                     </td>
                     <td className="px-3 py-2 text-center border-b border-slate-100">
-                      {p.prerequisite_code}
+                      {p.prerequisite_code ?? p.prerequisite?.code ?? p.prerequisite ?? "-"}
                     </td>
                     <td className="px-3 py-2 text-center border-b border-slate-100">
                       <button

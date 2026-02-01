@@ -27,17 +27,48 @@ function ProfessorDashboard({ auth, onLogout }) {
       onChangeView={setView}
     >
       {view === "home" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-1">
-            <LoginHistory accessToken={auth.accessToken} accentColor={accentColor} />
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <GlassCard className="p-5 lg:col-span-2">
+            <h2 className="text-sm font-bold mb-2">نمای کلی</h2>
 
-          <GlassCard className="p-5 md:col-span-2">
-            <h2 className="text-sm font-bold mb-2">خوش آمدید 👋</h2>
-            <p className="text-xs md:text-sm text-slate-700 leading-relaxed">
-              از منوی سمت راست می‌توانید دانشجویان هر درس را مشاهده و در صورت نیاز حذف کنید.
-            </p>
+            <div className="text-xs md:text-sm text-slate-700 leading-relaxed">
+              <div className="mb-1">
+                <span className="text-slate-500">کاربر:</span>{" "}
+                <span className="font-semibold">{auth.username}</span>
+              </div>
+
+              <div className="mb-1">
+                <span className="text-slate-500">نقش:</span>{" "}
+                <span className="font-semibold">استاد</span>
+              </div>
+
+              <div className="mt-3 text-xs text-slate-500">
+                تاریخچه ورود پایین صفحه، هر بار ۴ مورد را نشان می‌دهد (با دکمه‌های صفحه‌بندی).
+              </div>
+            </div>
           </GlassCard>
+
+          <GlassCard className="p-5 lg:col-span-1">
+            <h2 className="text-sm font-bold mb-3">میانبرها</h2>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setView("courseStudents")}
+                className="rounded-2xl border border-white/20 bg-white/8 backdrop-blur-md px-3 py-2 text-xs text-slate-800 hover:bg-white/12 transition shadow-sm"
+              >
+                دانشجویان درس
+              </button>
+            </div>
+          </GlassCard>
+
+          <div className="lg:col-span-3">
+            <LoginHistory
+              accessToken={auth.accessToken}
+              accentColor={accentColor}
+              title="تاریخچه ورود"
+              pageSize={4}
+            />
+          </div>
         </div>
       )}
 
