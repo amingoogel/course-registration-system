@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { loginRequest } from "./apiClient";
+import { loginRequest, fetchMe } from "./apiClient";
 
 function LoginPage({ onLoginSuccess }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("student"); // admin | professor | student
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -16,13 +15,23 @@ function LoginPage({ onLoginSuccess }) {
     try {
       const { accessToken } = await loginRequest(username, password);
 
+      // ✅ نقش و اطلاعات کاربر از /api/users/me/ گرفته می‌شود
+      const me = await fetchMe(accessToken);
+      const realRole = me?.role;
+      const realUsername = me?.username || username;
+
+      if (!realRole) {
+        setError("نقش کاربر از سرور دریافت نشد.");
+        return;
+      }
+
       onLoginSuccess({
         accessToken,
-        role,
-        username,
+        role: realRole,
+        username: realUsername,
       });
     } catch (err) {
-      setError("نام کاربری یا رمز عبور اشتباه است.");
+      setError(err?.message || "نام کاربری یا رمز عبور اشتباه است.");
     } finally {
       setLoading(false);
     }
@@ -31,34 +40,8 @@ function LoginPage({ onLoginSuccess }) {
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-slate-200 p-8 space-y-6">
-
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-800">
-            ورود به سامانه
-          </h1>
-        </div>
-
-        {/* انتخاب نقش */}
-        <div className="flex justify-center gap-2">
-          {[
-            { value: "student", label: "دانشجو" },
-            { value: "professor", label: "استاد" },
-            { value: "admin", label: "ادمین" },
-          ].map((item) => (
-            <button
-              key={item.value}
-              type="button"
-              onClick={() => setRole(item.value)}
-              className={`px-4 py-2 rounded-xl text-xs font-medium border transition
-                ${
-                  role === item.value
-                    ? "bg-indigo-600 text-white border-indigo-600"
-                    : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
-                }`}
-            >
-              {item.label}
-            </button>
-          ))}
+          <h1 className="text-2xl font-bold text-slate-800">ورود به سامانه</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
