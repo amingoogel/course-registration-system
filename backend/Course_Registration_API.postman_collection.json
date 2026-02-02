@@ -1,0 +1,504 @@
+{
+	"info": {
+		"_postman_id": "course-registration-api-001",
+		"name": "Course Registration API - سامانه انتخاب واحد",
+		"description": "کالکشن کامل اندپوینت‌های سامانه انتخاب واحد دانشگاه.\n\n**نحوه استفاده:**\n1. ابتدا با اندپوینت «ورود (دریافت توکن)» لاگین کنید.\n2. در Variables کالکشن مقدار `token` را با access token دریافتی پر کنید (یا از تست اسکریپت استفاده کنید).\n3. نقش‌ها: admin (مدیر)، professor (استاد)، student (دانشجو).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{ "key": "base_url", "value": "http://localhost:8000" },
+		{ "key": "token", "value": "" },
+		{ "key": "refresh_token", "value": "" },
+		{ "key": "course_code", "value": "CS101" },
+		{ "key": "term_id", "value": "1" },
+		{ "key": "student_number", "value": "9921001" }
+	],
+	"item": [
+		{
+			"name": "۱. احراز هویت (Auth)",
+			"description": "ورود با JWT و تمدید توکن. بعد از ورود موفق، تاریخچه ورود در LoginHistory ثبت می‌شود.",
+			"item": [
+				{
+					"name": "ورود - دریافت توکن (Login)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var json = pm.response.json();",
+									"    pm.collectionVariables.set('token', json.access);",
+									"    pm.collectionVariables.set('refresh_token', json.refresh);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": "{{base_url}}/api/token/",
+						"description": "**ورود و دریافت JWT**\n\n- **بدون احراز هویت**\n- Body: `username` (یوزرنیم)، `password` (رمز)\n- پاسخ: `access` (توکن دسترسی)، `refresh` (توکن تمدید)\n- بعد از ورود موفق یک رکورد در تاریخچه ورود (Login History) ثبت می‌شود.\n- **تست اسکریپت:** بعد از پاسخ موفق، توکن‌ها در متغیرهای کالکشن ذخیره می‌شوند و بقیه درخواست‌ها خودکار از آن استفاده می‌کنند.\n\n**نقش‌ها:** هر کاربر با یوزرنیم و پسورد خود لاگین می‌کند (admin, professor, student)."
+					}
+				},
+				{
+					"name": "تمدید توکن (Refresh Token)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+						},
+						"url": "{{base_url}}/api/token/refresh/",
+						"description": "با ارسال توکن `refresh` (دریافتی از اندپوینت ورود)، یک توکن `access` جدید دریافت می‌کنید. برای اندپوینت‌های محافظت‌شده از همین access استفاده کنید."
+					}
+				}
+			]
+		},
+		{
+			"name": "۲. کاربران (Users)",
+			"description": "کاربر جاری، تاریخچه ورود، ثبت‌نام دانشجو و استاد (فقط ادمین).",
+			"item": [
+				{
+					"name": "کاربر جاری (Current User)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/users/me/",
+						"description": "اطلاعات کاربر لاگین‌شده: id, username, first_name, last_name, role.\n\n**نیاز به توکن:** بله (هر نقش)."
+					}
+				},
+				{
+					"name": "لیست تاریخچه ورود (Login History)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/users/login-history/",
+						"description": "**ادمین:** لیست تمام ورودهای همه کاربران.\n**استاد/دانشجو:** فقط ورودهای خودش.\n\nفیلدها: id, login_at, ip_address, user_agent, is_success, failure_reason, user_display."
+					}
+				},
+				{
+					"name": "ثبت‌نام دانشجو (فقط ادمین)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"student_number\": \"9921001\",\n  \"national_code\": \"1234567890\",\n  \"first_name\": \"علی\",\n  \"last_name\": \"محمدی\"\n}"
+						},
+						"url": "{{base_url}}/api/users/register/register-student/",
+						"description": "**فقط ادمین**\n\n- `student_number`: شماره دانشجویی (همان یوزرنیم برای ورود)\n- `national_code`: کد ملی (همان رمز اولیه برای ورود)\n- `first_name`, `last_name`: نام و نام خانوادگی"
+					}
+				},
+				{
+					"name": "ثبت‌نام استاد (فقط ادمین)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personnel_number\": \"2001\",\n  \"national_code\": \"9876543210\",\n  \"first_name\": \"رضا\",\n  \"last_name\": \"احمدی\"\n}"
+						},
+						"url": "{{base_url}}/api/users/register/register-professor/",
+						"description": "**فقط ادمین**\n\n- `personnel_number`: شماره پرسنلی (یوزرنیم ورود)\n- `national_code`: کد ملی (رمز ورود)\n- `first_name`, `last_name`: نام و نام خانوادگی"
+					}
+				},
+				{
+					"name": "لیست دانشجویان (فقط ادمین - شماره، اسم، فامیل)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/users/students/",
+						"description": "**فقط ادمین**\n\nلیست دانشجویان با فیلدها: id, number (شماره دانشجویی), first_name (اسم), last_name (فامیل)."
+					}
+				},
+				{
+					"name": "لیست اساتید (فقط ادمین - شماره پرسنلی، اسم، فامیل)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/users/professors/",
+						"description": "**فقط ادمین**\n\nلیست اساتید با فیلدها: id, number (شماره پرسنلی), first_name (اسم), last_name (فامیل). برای انتساب به درس از همین شماره پرسنلی در professor_personnel_number استفاده کنید."
+					}
+				}
+			]
+		},
+		{
+			"name": "۳. دروس (Courses)",
+			"description": "CRUD دروس با **کد درس** (نه id). لیست و جزئیات برای همه لاگین‌شده؛ ایجاد/ویرایش/حذف فقط ادمین.",
+			"item": [
+				{
+					"name": "لیست دروس",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/courses/",
+						"description": "لیست همه دروس. فیلتر: professor, day. جستجو: name, code, professor name.\n\n**نیاز به توکن:** بله (هر نقش)."
+					}
+				},
+				{
+					"name": "جزئیات درس (با کد درس)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/courses/{{course_code}}/",
+						"description": "دریافت یک درس با **کد درس** (مثلاً CS101). نه با id."
+					}
+				},
+				{
+					"name": "ایجاد درس (فقط ادمین - با شماره پرسنلی استاد)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"CS101\",\n  \"name\": \"برنامه‌نویسی ۱\",\n  \"capacity\": 30,\n  \"units\": 3,\n  \"day\": \"شنبه\",\n  \"term\": 1,\n  \"professor_personnel_number\": \"2001\"\n}"
+						},
+						"url": "{{base_url}}/api/courses/",
+						"description": "**فقط ادمین**\n\nفیلدها: code (یکتا), name, capacity, units, day, start_time, end_time, location, term (id ترم), **professor_personnel_number** (شماره پرسنلی استاد، اختیاری). به‌جای id استاد از شماره پرسنلی استفاده کنید. پاسخ شامل professor_number (شماره پرسنلی) هم هست."
+					}
+				},
+				{
+					"name": "ویرایش درس (با کد درس - فقط ادمین)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"برنامه‌نویسی مقدماتی\",\n  \"capacity\": 35,\n  \"professor_personnel_number\": \"2001\"\n}"
+						},
+						"url": "{{base_url}}/api/courses/{{course_code}}/",
+						"description": "ویرایش جزئی (PATCH) یا کامل (PUT) با **کد درس** در URL. برای تغییر استاد از **professor_personnel_number** (شماره پرسنلی) استفاده کنید."
+					}
+				},
+				{
+					"name": "حذف درس (با کد درس - فقط ادمین)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/courses/{{course_code}}/",
+						"description": "حذف درس با **کد درس** در URL (مثلاً CS101)."
+					}
+				}
+			]
+		},
+		{
+			"name": "۴. پیش‌نیازها (Prerequisites)",
+			"description": "مدیریت پیش‌نیاز دروس با **کد درس** و **کد پیش‌نیاز**. فقط ادمین.",
+			"item": [
+				{
+					"name": "لیست پیش‌نیازها",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/prerequisites/",
+						"description": "لیست همه رابطه‌های پیش‌نیاز. پاسخ شامل course و prerequisite به صورت کد (مثلاً CS101)."
+					}
+				},
+				{
+					"name": "افزودن پیش‌نیاز (با کد درس)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"course_code\": \"CS102\",\n  \"prerequisite_code\": \"CS101\"\n}"
+						},
+						"url": "{{base_url}}/api/prerequisites/",
+						"description": "**فقط ادمین**\n\n- `course_code`: کد درسی که پیش‌نیاز دارد\n- `prerequisite_code`: کد درس پیش‌نیاز\n- درس نمی‌تواند پیش‌نیاز خودش باشد."
+					}
+				},
+				{
+					"name": "حذف پیش‌نیاز",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/prerequisites/1/",
+						"description": "حذف با **id** رکورد پیش‌نیاز (نه کد درس)."
+					}
+				}
+			]
+		},
+		{
+			"name": "۵. دروس دارای پیش‌نیاز (فقط کدها)",
+			"description": "لیست دروسی که حداقل یک پیش‌نیاز دارند؛ خروجی فقط کد درس و لیست کد پیش‌نیازها.",
+			"item": [
+				{
+					"name": "لیست دروس دارای پیش‌نیاز (فقط کد)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/courses-with-prerequisites/",
+						"description": "خروجی آرایه‌ای از:\n`{ \"course_code\": \"CS102\", \"prerequisite_codes\": [\"CS101\"] }`\n\nهر کاربر لاگین‌شده می‌تواند ببیند."
+					}
+				}
+			]
+		},
+		{
+			"name": "۶. ترم‌ها (Terms)",
+			"description": "مدیریت نیم‌سال‌ها. لیست و جزئیات برای همه؛ ایجاد/ویرایش/حذف/فعال-غیرفعال فقط ادمین.",
+			"item": [
+				{
+					"name": "لیست ترم‌ها",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/terms/",
+						"description": "لیست نیم‌سال‌ها. فیلدها: id, name, start_selection, end_selection, is_active."
+					}
+				},
+				{
+					"name": "جزئیات ترم",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/terms/{{term_id}}/",
+						"description": "دریافت یک ترم با id."
+					}
+				},
+				{
+					"name": "ایجاد ترم (فقط ادمین)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"نیم‌سال دوم ۱۴۰۴-۱۴۰۵\",\n  \"start_selection\": \"2025-02-01T08:00:00Z\",\n  \"end_selection\": \"2025-02-15T23:59:59Z\",\n  \"is_active\": false\n}"
+						},
+						"url": "{{base_url}}/api/terms/",
+						"description": "**فقط ادمین**\n\nname یکتا است. is_active: آیا انتخاب واحد برای این ترم باز است."
+					}
+				},
+				{
+					"name": "فعال/غیرفعال کردن ترم (فقط ادمین)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/terms/{{term_id}}/toggle-active/",
+						"description": "**فقط ادمین**\n\nوضعیت is_active را برعکس می‌کند. وقتی ترم غیرفعال شود دانشجویان دیگر نمی‌توانند برای آن ترم انتخاب واحد کنند."
+					}
+				}
+			]
+		},
+		{
+			"name": "۷. حد واحد (Unit Limit)",
+			"description": "حداقل و حداکثر واحد مجاز برای انتخاب واحد. GET برای همه؛ POST فقط ادمین.",
+			"item": [
+				{
+					"name": "دریافت حد واحد",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/unit-limit/",
+						"description": "پاسخ: min_units, max_units (مثلاً 12 و 20)."
+					}
+				},
+				{
+					"name": "تنظیم حد واحد (فقط ادمین)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"min_units\": 12,\n  \"max_units\": 20\n}"
+						},
+						"url": "{{base_url}}/api/unit-limit/",
+						"description": "**فقط ادمین**\n\nتنظیم حداقل و حداکثر واحد برای نهایی کردن انتخاب واحد."
+					}
+				}
+			]
+		},
+		{
+			"name": "۸. اساتید (Professors)",
+			"description": "لیست اساتید. فقط ادمین. برای (شماره پرسنلی، اسم، فامیل) از /api/users/professors/ استفاده کنید.",
+			"item": [
+				{
+					"name": "لیست اساتید (id و full_name - اپ courses)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/professors/",
+						"description": "**فقط ادمین**\n\nلیست اساتید از اپ courses: id, full_name. برای لیست با شماره پرسنلی و اسم/فامیل از اندپوینت «لیست اساتید» در پوشه کاربران (Users) استفاده کنید."
+					}
+				}
+			]
+		},
+		{
+			"name": "۹. انتخاب واحد (Selection - دانشجو)",
+			"description": "انتخاب درس، حذف از سبد، سبد پیش از نهایی، برنامه، نهایی کردن، کارنامه. همه با **کد درس** و فقط برای دانشجو.",
+			"item": [
+				{
+					"name": "لیست انتخاب‌های من",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/selection/selections/",
+						"description": "دانشجو: انتخاب‌های خودش. استاد: انتخاب‌های دروس خودش."
+					}
+				},
+				{
+					"name": "انتخاب درس (با کد درس)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"course_code\": \"CS101\"\n}"
+						},
+						"url": "{{base_url}}/api/selection/selections/select-course/",
+						"description": "**فقط دانشجو**\n\nبا **course_code** درس را به سبد اضافه می‌کند. قوانین: ترم فعال، ظرفیت، پیش‌نیاز، تداخل زمانی، حد واحد رعایت شود."
+					}
+				},
+				{
+					"name": "حذف درس از سبد (با کد درس)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/selection/selections/delete-selection/?course_code=CS101",
+						"description": "**فقط دانشجو**\n\nبا **course_code** در query string درس را از سبد حذف می‌کند. فقط قبل از نهایی کردن و در ترم فعال ممکن است."
+					}
+				},
+				{
+					"name": "سبد انتخاب واحد (قبل از نهایی)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/selection/selections/draft/",
+						"description": "**فقط دانشجو**\n\nلیست دروس انتخاب‌شده که هنوز نهایی نشده: course_code, course_name, units و total_units."
+					}
+				},
+				{
+					"name": "برنامه هفتگی",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/selection/selections/schedule/",
+						"description": "**فقط دانشجو**\n\nبرنامه دروس انتخاب‌شده به تفکیک روز: نام درس، زمان، مکان."
+					}
+				},
+				{
+					"name": "نهایی کردن انتخاب واحد",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/selection/selections/finalize/",
+						"description": "**فقط دانشجو**\n\nانتخاب‌های فعلی را نهایی می‌کند. حداقل و حداکثر واحد باید رعایت شده باشد."
+					}
+				},
+				{
+					"name": "کارنامه (Report Card)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/selection/selections/report-card/?term_id={{term_id}}",
+						"description": "**فقط دانشجو**\n\nکارنامه یک ترم: نام ترم، لیست دروس با نمره و وضعیت، معدل (gpa). نیاز به term_id در query."
+					}
+				}
+			]
+		},
+		{
+			"name": "۱۰. استاد - دانشجویان درس",
+			"description": "لیست دانشجویان یک درس و حذف دانشجو از درس. با **کد درس** و **شماره دانشجویی**. فقط استاد همان درس.",
+			"item": [
+				{
+					"name": "لیست دانشجویان یک درس (با کد درس)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/selection/professor/{{course_code}}/students/",
+						"description": "**فقط استاد**\n\nلیست دانشجویان ثبت‌نام‌شده در درس. در URL به جای id درس از **کد درس** (مثلاً CS101) استفاده کنید. فقط استاد همان درس دسترسی دارد."
+					}
+				},
+				{
+					"name": "حذف دانشجو از درس (کد درس + شماره دانشجویی)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/api/selection/professor/{{course_code}}/remove-student/?student_number={{student_number}}",
+						"description": "**فقط استاد همان درس**\n\n- در URL: **کد درس** (مثلاً CS101)\n- در query یا body: **student_number** (شماره دانشجویی = username)\n\nدانشجو از آن درس حذف می‌شود."
+					}
+				}
+			]
+		}
+	]
+}

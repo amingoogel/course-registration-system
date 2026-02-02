@@ -28,6 +28,10 @@ class Course(models.Model):
     location = models.CharField("محل برگزاری", max_length=100, blank=True)
     term = models.ForeignKey(Term, on_delete=models.CASCADE, related_name='courses', null=True, blank=True)
 
+    @property
+    def enrolled_count(self):
+        return self.selections.count()
+
     def __str__(self):
         return f"{self.code} - {self.name}"
 
