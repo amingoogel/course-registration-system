@@ -8,12 +8,27 @@ class TermSerializer(serializers.ModelSerializer):
         model = Term
         fields = ['id', 'name', 'start_selection', 'end_selection', 'is_active']
 
+
 class CourseSerializer(serializers.ModelSerializer):
     professor_name = serializers.CharField(source='professor.get_full_name', read_only=True)
+    professor_personnel_number = serializers.SlugRelatedField(
+        slug_field='username',
+        queryset=User.objects.filter(role='professor'),
+        required=False,
+        allow_null=True,
+        write_only=True,
+        source='professor',
+        help_text='شماره پرسنلی استاد'
+    )
+    professor_number = serializers.SerializerMethodField()
+
+    def get_professor_number(self, obj):
+        return obj.professor.username if obj.professor else None
 
     class Meta:
         model = Course
         fields = '__all__'
+        extra_kwargs = {'professor': {'read_only': True}}
 
     def validate_code(self, value):
         if self.instance:

@@ -63,6 +63,24 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'first_name', 'last_name', 'role']
 
 
+class StudentListSerializer(serializers.ModelSerializer):
+    """لیست دانشجویان برای ادمین: شماره دانشجویی، اسم، فامیل"""
+    number = serializers.CharField(source='username')
+
+    class Meta:
+        model = User
+        fields = ['id', 'number', 'first_name', 'last_name']
+
+
+class ProfessorListSerializer(serializers.ModelSerializer):
+    """لیست اساتید برای ادمین: شماره پرسنلی، اسم، فامیل"""
+    number = serializers.CharField(source='username')
+
+    class Meta:
+        model = User
+        fields = ['id', 'number', 'first_name', 'last_name']
+
+
 class LoginHistorySerializer(serializers.ModelSerializer):
     user_display = serializers.SerializerMethodField()
 

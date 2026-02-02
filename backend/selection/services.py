@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from .models import CourseSelection, Grade
 from .repositories import SelectionRepository
 from courses.models import UnitLimit
 
@@ -53,8 +54,6 @@ class SelectionService:
 
         # ثبت
         selection = CourseSelection.objects.create(student=student, course=course)
-        course.enrolled_count += 1
-        course.save()
         return selection
 
     def has_passed_prereq(self, student, prereq):
@@ -73,8 +72,6 @@ class SelectionService:
         if course.term and not course.term.is_active:
             raise ValidationError("مهلت انتخاب واحد برای این نیم‌سال تمام شده است.")
         selection.delete()
-        course.enrolled_count -= 1
-        course.save()
 
     @transaction.atomic
     def professor_delete_student(self, professor, course, student):
@@ -84,6 +81,4 @@ class SelectionService:
         if not selection:
             raise ValidationError("این دانشجو در این درس ثبت‌نام نکرده.")
         selection.delete()
-        course.enrolled_count -= 1
-        course.save()
 

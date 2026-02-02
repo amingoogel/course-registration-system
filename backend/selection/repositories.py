@@ -20,10 +20,15 @@ class SelectionRepository:
         return selections.aggregate(total_units=Sum('course__units'))['total_units'] or 0
 
     def has_time_conflict(self, student, new_course):
+        if not new_course.start_time or not new_course.end_time:
+            return False
         selections = self.get_student_selections(student)
         for sel in selections:
-            if sel.course.day == new_course.day and (
-                sel.course.start_time < new_course.end_time and sel.course.end_time > new_course.start_time
-            ):
+            if sel.course.day != new_course.day:
+                continue
+            st, et = sel.course.start_time, sel.course.end_time
+            if st is None or et is None:
+                continue
+            if st < new_course.end_time and et > new_course.start_time:
                 return True
         return False
