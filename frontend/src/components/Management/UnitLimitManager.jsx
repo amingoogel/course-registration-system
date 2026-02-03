@@ -103,7 +103,7 @@ function UnitLimitManager({ accessToken, accentColor = "#64748b" }) {
                   type="number"
                   value={minUnits}
                   onChange={(e) => setMinUnits(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+                  className="w-full h-10 rounded-lg border border-slate-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
                 />
               </div>
 
@@ -115,7 +115,7 @@ function UnitLimitManager({ accessToken, accentColor = "#64748b" }) {
                   type="number"
                   value={maxUnits}
                   onChange={(e) => setMaxUnits(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+                  className="w-full h-10 rounded-lg border border-slate-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
                 />
               </div>
             </div>
@@ -136,7 +136,7 @@ function UnitLimitManager({ accessToken, accentColor = "#64748b" }) {
             <button
               type="submit"
               disabled={saving}
-              className="rounded-xl bg-indigo-600 text-white px-4 py-2 text-sm hover:bg-indigo-700 disabled:opacity-70"
+              className="w-full h-10 rounded-xl bg-indigo-600 text-white px-4 text-sm hover:bg-indigo-700 disabled:opacity-70"
             >
               {saving
                 ? "در حال ذخیره..."

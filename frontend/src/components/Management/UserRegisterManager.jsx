@@ -23,7 +23,8 @@ const CONFIG = {
     submit: registerStudent,
     remove: deleteStudent,
     getRowId: (u) => u.id,
-    getMainId: (u) => u.student_number,
+    // لیست جدید: /api/users/students/ => number
+    getMainId: (u) => u.number ?? u.student_number,
   },
 
   professor: {
@@ -40,7 +41,8 @@ const CONFIG = {
     submit: registerProfessor,
     remove: deleteProfessor,
     getRowId: (u) => u.id,
-    getMainId: (u) => u.personnel_number,
+    // لیست جدید: /api/users/professors/ => number
+    getMainId: (u) => u.number ?? u.personnel_number,
   },
 };
 
@@ -295,9 +297,8 @@ function UserRegisterManager({ accessToken, accentColor = "#64748b" }) {
             <table className="w-full text-xs border-separate border-spacing-0">
               <thead className="bg-slate-50">
                 <tr className="text-slate-500">
-                  <th className="text-right py-2 px-2 border-b border-slate-200">شناسه</th>
-                  <th className="text-right py-2 px-2 border-b border-slate-200">نام</th>
-                  <th className="text-right py-2 px-2 border-b border-slate-200">کد ملی</th>
+                  <th className="text-right py-2 px-2 border-b border-slate-200">شماره</th>
+                  <th className="text-right py-2 px-2 border-b border-slate-200">نام و نام خانوادگی</th>
                   <th className="text-right py-2 px-2 border-b border-slate-200"></th>
                 </tr>
               </thead>
@@ -309,7 +310,6 @@ function UserRegisterManager({ accessToken, accentColor = "#64748b" }) {
                     <td className="py-2 px-2 border-b border-slate-100">
                       {u.first_name} {u.last_name}
                     </td>
-                    <td className="py-2 px-2 border-b border-slate-100">{u.national_code}</td>
                     <td className="py-2 px-2 border-b border-slate-100">
                       <button
                         type="button"
@@ -324,7 +324,7 @@ function UserRegisterManager({ accessToken, accentColor = "#64748b" }) {
 
                 {list.length === 0 && !loading && (
                   <tr>
-                    <td colSpan={4} className="text-center text-slate-400 py-4">
+                    <td colSpan={3} className="text-center text-slate-400 py-4">
                       موردی ثبت نشده است
                     </td>
                   </tr>

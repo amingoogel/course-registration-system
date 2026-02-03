@@ -176,9 +176,23 @@ async function fetchPrerequisiteMap(accessToken) {
 export async function fetchCoursesEnriched(accessToken) {
   const courses = await fetchCourses(accessToken);
   const prereqMap = await fetchPrerequisiteMap(accessToken);
+
+  // Optional: enrich with term names (if endpoint is available)
+  let termMap = {};
+  try {
+    const terms = await fetchTerms(accessToken);
+    termMap = (Array.isArray(terms) ? terms : []).reduce((acc, t) => {
+      acc[String(t?.id)] = t?.name || `Term #${t?.id}`;
+      return acc;
+    }, {});
+  } catch {
+    termMap = {};
+  }
+
   return (Array.isArray(courses) ? courses : []).map((c) => ({
     ...c,
     prerequisite_codes: prereqMap[c?.code] || [],
+    term_name: c?.term != null ? termMap[String(c.term)] || `Term #${c.term}` : "",
   }));
 }
 
@@ -420,7 +434,8 @@ export async function fetchStudents(accessToken) {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
 
-  return handleResponse(res);
+  const data = await handleResponse(res);
+  return normalizeList(data);
 }
 
 // DELETE student
@@ -455,11 +470,12 @@ export async function registerProfessor(accessToken, payload) {
 // GET professors
 export async function fetchProfessors(accessToken) {
   // ✅ جدید: لیست اساتید
-  const res = await fetch(`${BASE_URL}/api/professors/`, {
+  const res = await fetch(`${BASE_URL}/api/users/professors/`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
 
-  return handleResponse(res);
+  const data = await handleResponse(res);
+  return normalizeList(data);
 }
 
 // =======================

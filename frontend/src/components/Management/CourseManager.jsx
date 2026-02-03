@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import {
   fetchCourses,
+  fetchTerms,
+  fetchProfessors,
   createCourse,
   updateCourse,
   deleteCourse,
@@ -16,7 +18,9 @@ const emptyCourse = {
   start_time: "",
   end_time: "",
   location: "",
-  professor: "",
+  term: "",
+  // بک‌اند جدید: شماره پرسنلی استاد (نه id)
+  professor_personnel_number: "",
 };
 
 const weekDays = ["شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه"];
@@ -38,6 +42,8 @@ const locations = [
 
 function CourseManager({ accessToken, accentColor = "#64748b" }) {
   const [courses, setCourses] = useState([]);
+  const [terms, setTerms] = useState([]);
+  const [professors, setProfessors] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(emptyCourse);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -52,8 +58,15 @@ function CourseManager({ accessToken, accentColor = "#64748b" }) {
       setLoading(true);
       setMessage("");
       try {
-        const data = await fetchCourses(accessToken);
-        setCourses(Array.isArray(data) ? data : []);
+        const [courseData, termData, profData] = await Promise.all([
+          fetchCourses(accessToken),
+          fetchTerms(accessToken).catch(() => []),
+          fetchProfessors(accessToken).catch(() => []),
+        ]);
+
+        setCourses(Array.isArray(courseData) ? courseData : []);
+        setTerms(Array.isArray(termData) ? termData : []);
+        setProfessors(Array.isArray(profData) ? profData : []);
       } catch (err) {
         setMessageType("error");
         setMessage(err.message || "خطا در دریافت لیست دروس.");
@@ -89,7 +102,16 @@ function CourseManager({ accessToken, accentColor = "#64748b" }) {
       start_time: course.start_time ?? "",
       end_time: course.end_time ?? "",
       location: course.location ?? "",
-      professor: course.professor ?? "",
+      term:
+        course.term === null || course.term === undefined
+          ? ""
+          : String(typeof course.term === "object" ? course.term?.id ?? "" : course.term),
+      professor_personnel_number:
+        course.professor_personnel_number ??
+        course.professor?.number ??
+        course.professor?.personnel_number ??
+        course.professor ??
+        "",
     });
     setMessage("");
     setMessageType("");
@@ -118,6 +140,14 @@ function CourseManager({ accessToken, accentColor = "#64748b" }) {
     if (!selectedCourse.code || !selectedCourse.name) {
       setMessageType("error");
       setMessage("فیلدهای کد درس و نام درس اجباری هستند.");
+      return;
+    }
+
+    // ✅ نیم‌سال (اجباری)
+    if (!String(selectedCourse.term || "").trim()) {
+      setErrors({ term: true });
+      setMessageType("error");
+      setMessage("انتخاب نیم‌سال الزامی است.");
       return;
     }
 
@@ -175,7 +205,12 @@ function CourseManager({ accessToken, accentColor = "#64748b" }) {
       if (selectedCourse.start_time?.trim()) payload.start_time = selectedCourse.start_time.trim();
       if (selectedCourse.end_time?.trim()) payload.end_time = selectedCourse.end_time.trim();
       if (selectedCourse.location?.trim()) payload.location = selectedCourse.location.trim();
-      if (selectedCourse.professor?.trim()) payload.professor = selectedCourse.professor.trim();
+      payload.term = Number(selectedCourse.term);
+
+      // ✅ بک‌اند جدید: professor_personnel_number
+      if (selectedCourse.professor_personnel_number?.trim()) {
+        payload.professor_personnel_number = selectedCourse.professor_personnel_number.trim();
+      }
 
       if (selectedCourse.id) {
         const updated = await updateCourse(accessToken, selectedCourse.id, payload);
@@ -397,14 +432,58 @@ function CourseManager({ accessToken, accentColor = "#64748b" }) {
 
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-slate-700">
-                  استاد
+                  نیم‌سال *
+                </label>
+                <select
+                  value={selectedCourse.term}
+                  onChange={(e) => handleInputChange("term", e.target.value)}
+                  className={`w-full rounded-lg bg-white px-3 py-2 text-xs md:text-sm focus:ring-2 focus:ring-indigo-500 ${
+                    errors.term ? "border border-red-500" : "border border-slate-300"
+                  }`}
+                >
+                  <option value="">انتخاب نیم‌سال</option>
+                  {(terms || []).map((t) => (
+                    <option key={t.id} value={String(t.id)}>
+                      {t.name || `Term #${t.id}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-slate-700">
+                  شماره پرسنلی استاد
                 </label>
                 <input
                   type="text"
+                  inputMode="numeric"
+                  maxLength={8}
+                  list="professorsList"
+                  placeholder="مثلاً 2001"
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  value={selectedCourse.professor}
-                  onChange={(e) => handleInputChange("professor", e.target.value)}
+                  value={selectedCourse.professor_personnel_number}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "professor_personnel_number",
+                      e.target.value.replace(/\D/g, "").slice(0, 8)
+                    )
+                  }
                 />
+
+                <datalist id="professorsList">
+                  {(professors || []).map((p) => {
+                    const num = p?.number ?? p?.personnel_number;
+                    if (!num) return null;
+                    const name = `${p?.first_name || ""} ${p?.last_name || ""}`.trim();
+                    return (
+                      <option
+                        key={p.id ?? num}
+                        value={String(num)}
+                        label={name ? `${num} - ${name}` : String(num)}
+                      />
+                    );
+                  })}
+                </datalist>
               </div>
             </div>
 
@@ -478,7 +557,7 @@ function CourseManager({ accessToken, accentColor = "#64748b" }) {
                     "شروع کلاس",
                     "پایان کلاس",
                     "محل",
-                    "استاد",
+                    "شماره پرسنلی استاد",
                     "عملیات",
                   ].map((head) => (
                     <th
@@ -532,7 +611,11 @@ function CourseManager({ accessToken, accentColor = "#64748b" }) {
                         {course.location || "-"}
                       </td>
                       <td className="px-3 py-2 text-center border-b border-slate-100">
-                        {course.professor || "-"}
+                        {course.professor_personnel_number ??
+                          course.professor?.number ??
+                          course.professor?.personnel_number ??
+                          course.professor ??
+                          "-"}
                       </td>
                       <td className="px-3 py-2 text-center border-b border-slate-100">
                         <div className="flex flex-wrap justify-center gap-1">

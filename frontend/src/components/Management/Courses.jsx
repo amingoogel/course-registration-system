@@ -148,6 +148,7 @@ function Courses({ accessToken, title = "لیست دروس", accentColor = "#647
                   "نام درس",
                   "ظرفیت",
                   "واحد",
+                  "نیم‌سال",
                   "روز",
                   "شروع کلاس",
                   "پایان کلاس",
@@ -168,7 +169,7 @@ function Courses({ accessToken, title = "لیست دروس", accentColor = "#647
               {filteredCourses.length === 0 && !loading ? (
                 <tr>
                   <td
-                    colSpan={9}
+                    colSpan={10}
                     className="px-3 py-4 text-center text-xs text-slate-500"
                   >
                     نتیجه‌ای پیدا نشد.
@@ -194,6 +195,9 @@ function Courses({ accessToken, title = "لیست دروس", accentColor = "#647
                     </td>
                     <td className="px-3 py-2 text-center border-b border-slate-100">
                       {course.units ?? "-"}
+                    </td>
+                    <td className="px-3 py-2 text-center border-b border-slate-100">
+                      {course.term_name || (course.term != null ? `Term #${course.term}` : "-")}
                     </td>
                     <td className="px-3 py-2 text-center border-b border-slate-100">
                       {course.day || "-"}

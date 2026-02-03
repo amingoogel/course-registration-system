@@ -17,9 +17,29 @@ function sumUnits(list) {
   );
 }
 
+function normalizeDraftResponse(data) {
+  // New backend format: { courses: [...], total_units: number }
+  if (data && typeof data === "object" && !Array.isArray(data)) {
+    const courses = Array.isArray(data.courses) ? data.courses : [];
+    const total_units =
+      data.total_units === null || data.total_units === undefined
+        ? sumUnits(courses)
+        : Number(data.total_units);
+    return { courses, total_units };
+  }
+
+  // Legacy: an array of courses
+  if (Array.isArray(data)) {
+    return { courses: data, total_units: sumUnits(data) };
+  }
+
+  return { courses: [], total_units: 0 };
+}
+
+
 function CourseSelection({ accessToken, accentColor = "#64748b" }) {
   const [courses, setCourses] = useState([]);
-  const [draft, setDraft] = useState([]);
+  const [draftData, setDraftData] = useState({ courses: [], total_units: 0 });
   const [finalList, setFinalList] = useState([]);
   const [unitLimit, setUnitLimit] = useState(null);
 
@@ -32,10 +52,15 @@ function CourseSelection({ accessToken, accentColor = "#64748b" }) {
   const minUnits = Number(unitLimit?.min_units ?? 0);
   const maxUnits = Number(unitLimit?.max_units ?? 0);
 
-  const totalDraftUnits = useMemo(() => sumUnits(draft), [draft]);
+  const totalDraftUnits = useMemo(
+    () => Number(draftData?.total_units ?? sumUnits(draftData?.courses)),
+    [draftData]
+  );
   const withinRange =
     (minUnits ? totalDraftUnits >= minUnits : true) &&
     (maxUnits ? totalDraftUnits <= maxUnits : true);
+
+  const draftCourses = useMemo(() => (draftData?.courses ? draftData.courses : []), [draftData]);
 
   const loadAll = async () => {
     setLoading(true);
@@ -49,7 +74,7 @@ function CourseSelection({ accessToken, accentColor = "#64748b" }) {
       ]);
 
       setCourses(Array.isArray(courseData) ? courseData : []);
-      setDraft(Array.isArray(draftData) ? draftData : []);
+      setDraftData(normalizeDraftResponse(draftData));
       setFinalList(Array.isArray(finalData) ? finalData : []);
       setUnitLimit(unitData || null);
     } catch (e) {
@@ -76,7 +101,7 @@ function CourseSelection({ accessToken, accentColor = "#64748b" }) {
       setMsg("درس به لیست موقت اضافه شد.");
       setSelectedCode("");
       const draftData = await fetchDraftSelections(accessToken);
-      setDraft(Array.isArray(draftData) ? draftData : []);
+      setDraftData(normalizeDraftResponse(draftData));
     } catch (e) {
       setError(e?.message || "افزودن درس با خطا مواجه شد.");
     } finally {
@@ -93,7 +118,7 @@ function CourseSelection({ accessToken, accentColor = "#64748b" }) {
       await removeCourseFromDraft(accessToken, courseCode);
       setMsg("درس از لیست موقت حذف شد.");
       const draftData = await fetchDraftSelections(accessToken);
-      setDraft(Array.isArray(draftData) ? draftData : []);
+      setDraftData(normalizeDraftResponse(draftData));
     } catch (e) {
       setError(e?.message || "حذف درس با خطا مواجه شد.");
     } finally {
@@ -112,7 +137,7 @@ function CourseSelection({ accessToken, accentColor = "#64748b" }) {
         fetchDraftSelections(accessToken),
         fetchFinalSelections(accessToken),
       ]);
-      setDraft(Array.isArray(draftData) ? draftData : []);
+      setDraftData(normalizeDraftResponse(draftData));
       setFinalList(Array.isArray(finalData) ? finalData : []);
     } catch (e) {
       setError(e?.message || "نهایی کردن با خطا مواجه شد.");
@@ -144,28 +169,22 @@ function CourseSelection({ accessToken, accentColor = "#64748b" }) {
             </div>
           )}
 
-          <div className="grid gap-3 md:grid-cols-3 items-end">
-            <div className="md:col-span-2 space-y-1">
-              <label className="block text-xs font-medium text-slate-700">انتخاب درس</label>
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:gap-3">
+            <div className="flex-1 space-y-1">
+              <label className="block text-xs font-medium text-slate-700">کد درس</label>
               <input
                 value={selectedCode}
-                onChange={(e) => setSelectedCode(e.target.value)}
-                placeholder="مثلاً 7777101"
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+                onChange={(e) => setSelectedCode(String(e.target.value || "").replace(/\s/g, ""))}
+                placeholder="مثال: 7777101"
+                className="w-full h-10 rounded-xl border border-slate-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
               />
-              <div className="text-[11px] text-slate-500">
-                فقط کد درس را وارد کن (بدون فاصله).
-                {courses?.length > 0 && (
-                  <span className="block mt-1">نمونه کدها: {courses.slice(0, 6).map((c) => c.code).join("، ")}{courses.length > 6 ? "…" : ""}</span>
-                )}
-              </div>
             </div>
 
             <button
               type="button"
               onClick={handleAdd}
               disabled={saving || loading || !selectedCode}
-              className="rounded-xl bg-indigo-600 text-white px-4 py-2 text-sm hover:bg-indigo-700 disabled:opacity-70"
+              className="h-10 rounded-xl bg-indigo-600 text-white px-5 text-sm hover:bg-indigo-700 disabled:opacity-70 whitespace-nowrap"
             >
               افزودن
             </button>
@@ -219,14 +238,14 @@ function CourseSelection({ accessToken, accentColor = "#64748b" }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {(!draft || draft.length === 0) && !loading ? (
+                    {(!draftCourses || draftCourses.length === 0) && !loading ? (
                       <tr>
                         <td colSpan={4} className="px-3 py-4 text-center text-slate-500">
                           موردی در لیست موقت نیست.
                         </td>
                       </tr>
                     ) : (
-                      (draft || []).map((c) => {
+                      (draftCourses || []).map((c) => {
                         const code = c?.code || c?.course_code;
                         const name = c?.name || c?.course_name;
                         const units = c?.units ?? c?.course_units;
@@ -260,7 +279,7 @@ function CourseSelection({ accessToken, accentColor = "#64748b" }) {
               <button
                 type="button"
                 onClick={handleFinalize}
-                disabled={saving || loading || !draft?.length || !withinRange}
+                disabled={saving || loading || !draftCourses?.length || !withinRange}
                 className="w-full mt-3 rounded-xl bg-emerald-600 text-white px-4 py-2 text-sm hover:bg-emerald-700 disabled:opacity-70"
               >
                 ثبت نهایی
